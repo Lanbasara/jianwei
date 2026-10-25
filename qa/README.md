@@ -14,7 +14,8 @@ The only exclusions are this exact, reviewed list:
 - `qa/no_network/sitecustomize.py`: best-effort defense-in-depth Python network
   guard.
 - `qa/jianwei/check_market.mjs`: adapter for a separately supplied official
-  Marketplace validator, not a self-contained repository test.
+  Marketplace validator, not a self-contained PR test. The self-contained
+  `marketplace-contract` suite tests the builder without this adapter.
 - `qa/tanyuan/evidence.py`: local evidence path-resolution library.
 - `qa/tanyuan/evals/score.py`: caller-driven diagnostic scorer.
 - `qa/tanyuan/evals/build_golden.py`, `fetch_truth.py`, and
@@ -57,6 +58,18 @@ The only Node invocation is the fixed `build-contract` implementation running
 the reviewed `qa/jianwei/check_dsh.mjs`; the registry cannot add arbitrary Node
 commands or files.
 
+`marketplace-contract` is an offline PR gate. It creates local Git fixtures
+and verifies that Marketplace catalogs pin the committed `plugin/` subtree,
+authenticate every regular file in that subtree against `manifest.json`,
+retain descending Git-verified DSH history, publish a same-parent staging
+directory with an atomic no-replace rename, and reject malformed refs, manifests, identities, paths,
+links, timestamps, and duplicate versions. Legacy root-layout history is
+limited to 0.1.0 and 0.1.1; 0.2.0 and newer history must use `plugin/`. It does
+not run host installers or an external validator. Manual release verification
+may separately supply the official DSH validator to
+`qa/jianwei/check_market.mjs` and run the local Claude validator against a
+generated candidate.
+
 ## Commands
 
 ```bash
@@ -65,6 +78,9 @@ python qa/policy_check.py
 python -m unittest discover -s qa/meta -p 'test_*.py' -v
 python qa/run.py --list
 python qa/run.py --gate pull-request
+
+# Run only the self-contained Marketplace tracer.
+python qa/run.py --suite marketplace-contract
 
 export JIANWEI_QA_HOME=/absolute/path/to/local/golden
 python qa/run.py --suite evidence-local

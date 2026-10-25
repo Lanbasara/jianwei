@@ -71,6 +71,19 @@
       "files": ["qa/jianwei/check_dsh.mjs", "scripts/build_jianwei.py"]
     },
     {
+      "id": "marketplace-contract",
+      "kind": "build-contract",
+      "execution": "ci",
+      "gates": ["pull-request"],
+      "network": false,
+      "credentials": "none",
+      "runner": "marketplace-contract",
+      "files": [
+        "qa/jianwei/test_marketplace.py",
+        "scripts/build_jianwei_marketplace.py"
+      ]
+    },
+    {
       "id": "evidence-local",
       "kind": "deterministic",
       "execution": "local",

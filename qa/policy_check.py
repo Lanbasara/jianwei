@@ -56,6 +56,14 @@ RUNNER_CAPABILITIES = {
         "runtime": "fixed-python-node",
         "files": ("qa/jianwei/check_dsh.mjs", "scripts/build_jianwei.py"),
     },
+    "marketplace-contract": {
+        "network": False,
+        "runtime": "python",
+        "files": (
+            "qa/jianwei/test_marketplace.py",
+            "scripts/build_jianwei_marketplace.py",
+        ),
+    },
     "evidence-local": {
         "network": False,
         "runtime": "python",

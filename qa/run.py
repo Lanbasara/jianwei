@@ -196,6 +196,17 @@ def run_build_contract(env: dict[str, str]) -> None:
     print("PASS: fresh build matches tracked plugin")
 
 
+def run_marketplace_contract(env: dict[str, str]) -> None:
+    files = capability_files("marketplace-contract")
+    tests = [item for item in files
+             if item.startswith("qa/jianwei/") and PurePosixPath(item).suffix == ".py"]
+    builders = [item for item in files
+                if item.startswith("scripts/") and PurePosixPath(item).suffix == ".py"]
+    if len(tests) != 1 or len(builders) != 1:
+        raise RunError("marketplace-contract requires one QA test and one builder")
+    run_command([sys.executable, "-m", "unittest", "-v", python_module(tests[0])], env)
+
+
 def run_evidence_local(env: dict[str, str]) -> None:
     for path in capability_files("evidence-local"):
         if PurePosixPath(path).suffix != ".py":
@@ -228,6 +239,7 @@ RUNNERS: dict[str, Callable[[dict[str, str]], None]] = {
     "evidence-security": run_evidence_security,
     "judge-selftest": run_judge_selftest,
     "build-contract": run_build_contract,
+    "marketplace-contract": run_marketplace_contract,
     "evidence-local": run_evidence_local,
     "tanyuan-live": run_tanyuan_live,
 }

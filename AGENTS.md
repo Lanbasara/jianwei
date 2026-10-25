@@ -38,7 +38,13 @@ non-gating; live checks remain manual and require explicit network approval.
 
 Complete source or packaging changes only after running the offline Jianwei
 unit tests, producing a fresh build, checking the DSH registration contract,
-and comparing the reviewed generated tree with that fresh build.
+comparing the reviewed generated tree with that fresh build, and passing the
+offline Marketplace contract. Marketplace candidates must be generated from
+committed `plugin/` metadata through `scripts/build_jianwei_marketplace.py`;
+never edit a catalog candidate by hand or fall back to the compatibility
+package at the repository root. The builder must authenticate the complete
+tagged `plugin/` tree against its manifest and must verify imported catalog
+history against the same local Git repository before publishing a candidate.
 
 AI-dependent quality evaluation is advisory and local-only. It must be
 explicitly classified and must never become a pull-request, release, install,

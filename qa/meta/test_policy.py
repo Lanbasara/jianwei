@@ -147,7 +147,7 @@ class PolicyValidationTests(unittest.TestCase):
         offline = next(item for item in suites if item["id"] == "tanyuan-offline")
         live = next(item for item in suites if item["id"] == "tanyuan-live")
         self.assertFalse(set(offline["files"]).intersection(live["files"]))
-        self.assertGreaterEqual(len(policy_check.scan_entry_points(ROOT)), 16)
+        self.assertGreaterEqual(len(policy_check.scan_entry_points(ROOT)), 17)
         self.assertEqual(policy_check.RUNNERS, set(qa_run.RUNNERS))
         for item in suites:
             self.assertEqual(
@@ -171,6 +171,18 @@ class PolicyValidationTests(unittest.TestCase):
             qa_run.run_tanyuan_offline({})
         argv, passed_env = command.call_args.args
         self.assertEqual(argv, [sys.executable, "-m", "unittest", "-v", *expected])
+        self.assertEqual(passed_env, {})
+
+    def test_marketplace_runner_is_derived_from_its_capability_manifest(self):
+        manifest = policy_check.RUNNER_CAPABILITIES["marketplace-contract"]["files"]
+        test_file = next(path for path in manifest if path.startswith("qa/jianwei/"))
+        with patch.object(qa_run, "run_command") as command:
+            qa_run.run_marketplace_contract({})
+        argv, passed_env = command.call_args.args
+        self.assertEqual(
+            argv,
+            [sys.executable, "-m", "unittest", "-v", qa_run.python_module(test_file)],
+        )
         self.assertEqual(passed_env, {})
 
     def test_ai_cannot_be_ci_or_gated(self):
