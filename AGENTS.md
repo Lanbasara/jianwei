@@ -28,6 +28,14 @@ link traversal. Python subprocesses must use argument arrays with `shell=False`.
 
 ## Validation
 
+Every new `.py`, `.mjs`, `.js`, `.sh`, `.bash`, or `.zsh` file under `qa/` is a
+QA entry point by default, as is any executable file with another extension,
+and must be registered explicitly in `qa/suites.json`; exact support-file
+exclusions require a matching explanation in `qa/README.md`. Always pass
+`python qa/policy_check.py`. Do not add commands to the registry: runner IDs
+are implemented only in `qa/run.py`. AI evaluation remains local and
+non-gating; live checks remain manual and require explicit network approval.
+
 Complete source or packaging changes only after running the offline Jianwei
 unit tests, producing a fresh build, checking the DSH registration contract,
 and comparing the reviewed generated tree with that fresh build.

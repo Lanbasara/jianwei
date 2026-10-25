@@ -1,0 +1,94 @@
+{
+  "version": 1,
+  "suites": [
+    {
+      "id": "policy-meta",
+      "kind": "deterministic",
+      "execution": "ci",
+      "gates": ["pull-request"],
+      "network": false,
+      "credentials": "none",
+      "runner": "policy-meta",
+      "files": ["qa/meta/test_policy.py"]
+    },
+    {
+      "id": "jianwei-unit",
+      "kind": "build-contract",
+      "execution": "ci",
+      "gates": ["pull-request"],
+      "network": false,
+      "credentials": "none",
+      "runner": "jianwei-unit",
+      "files": ["qa/jianwei/test_distribution.py"]
+    },
+    {
+      "id": "tanyuan-offline",
+      "kind": "deterministic",
+      "execution": "ci",
+      "gates": ["pull-request"],
+      "network": false,
+      "credentials": "none",
+      "runner": "tanyuan-offline",
+      "files": [
+        "qa/tanyuan/tests/test_cli_boundaries.py",
+        "qa/tanyuan/tests/test_contract.py",
+        "qa/tanyuan/tests/test_documents.py",
+        "qa/tanyuan/tests/test_eval_integrity.py",
+        "qa/tanyuan/tests/test_fund.py",
+        "qa/tanyuan/tests/test_garden.py",
+        "qa/tanyuan/tests/test_portable.py",
+        "qa/tanyuan/tests/test_semantics.py"
+      ]
+    },
+    {
+      "id": "evidence-security",
+      "kind": "deterministic",
+      "execution": "ci",
+      "gates": ["pull-request"],
+      "network": false,
+      "credentials": "none",
+      "runner": "evidence-security",
+      "files": ["qa/tanyuan/security_path_tests.py"]
+    },
+    {
+      "id": "judge-selftest",
+      "kind": "deterministic",
+      "execution": "ci",
+      "gates": ["pull-request"],
+      "network": false,
+      "credentials": "none",
+      "runner": "judge-selftest",
+      "files": ["qa/tanyuan/evals/selftest/test_judges.py"]
+    },
+    {
+      "id": "build-contract",
+      "kind": "build-contract",
+      "execution": "ci",
+      "gates": ["pull-request"],
+      "network": false,
+      "credentials": "none",
+      "runner": "build-contract",
+      "files": ["qa/jianwei/check_dsh.mjs", "scripts/build_jianwei.py"]
+    },
+    {
+      "id": "evidence-local",
+      "kind": "deterministic",
+      "execution": "local",
+      "gates": [],
+      "network": false,
+      "credentials": "external-local",
+      "runner": "evidence-local",
+      "files": ["qa/tanyuan/check_frozen.py", "qa/tanyuan/evals/verify_golden.py"]
+    },
+    {
+      "id": "tanyuan-live",
+      "kind": "live",
+      "execution": "manual",
+      "gates": [],
+      "network": true,
+      "credentials": "external-local",
+      "runner": "tanyuan-live",
+      "files": ["qa/tanyuan/tests/test_live_contract.py"]
+    }
+  ]
+}

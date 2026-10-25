@@ -13,7 +13,7 @@ sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(HERE / "tests"))
 
 from evidence import EvidencePathError, evidence_root, golden_path  # noqa: E402
-from test_contract import live_checks_enabled  # noqa: E402
+from test_live_contract import live_checks_enabled  # noqa: E402
 
 
 class EvidenceSecurityTests(unittest.TestCase):
