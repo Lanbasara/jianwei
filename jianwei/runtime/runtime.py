@@ -5,21 +5,33 @@ import hashlib
 import os
 from pathlib import Path
 import shlex
+import stat
 import subprocess
 import sys
 import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
 REQUIREMENTS = ROOT / "skills/tanyuan/requirements.txt"
+CREDENTIALS = ("TUSHARE_TOKEN", "TAVILY_API_KEY", "DEEPSEEK_API_KEY", "SEC_CONTACT")
+
+
+def reject_symlink_components(path: Path) -> None:
+    """Reject every existing symlink component before a managed path is used."""
+    for part in reversed((path, *path.parents)):
+        try:
+            mode = part.lstat().st_mode
+        except FileNotFoundError:
+            continue
+        if stat.S_ISLNK(mode):
+            raise ValueError("运行环境路径不能包含符号链接。")
 
 
 def state_home() -> Path:
     value = os.environ.get("JIANWEI_HOME")
-    path = Path(value).expanduser() if value else Path.home() / ".local/share/jianwei"
+    path = Path(value).expanduser() if value else ROOT / ".runtime"
     if not path.is_absolute():
         raise ValueError("JIANWEI_HOME 必须是绝对路径。")
-    if path.is_symlink():
-        raise ValueError("JIANWEI_HOME 不能是符号链接。")
+    reject_symlink_components(path)
     return path
 
 
@@ -28,16 +40,21 @@ def dependency_id() -> str:
 
 
 def managed_dir(path: Path) -> None:
-    if path.is_symlink():
-        raise ValueError("运行环境目录不能是符号链接。")
-    path.mkdir(mode=0o700, parents=True, exist_ok=True)
+    reject_symlink_components(path)
+    try:
+        path.mkdir(mode=0o700, parents=True, exist_ok=True)
+    except PermissionError as error:
+        raise ValueError(
+            "当前 Jianwei 安装副本不可写；请明确选择一个可写的绝对目录，"
+            "并以 JIANWEI_HOME=/absolute/path 重新运行 setup。"
+        ) from error
+    reject_symlink_components(path)
     if not path.is_dir():
         raise ValueError("运行环境位置不是目录。")
 
 
 def read_pointer(path: Path) -> str | None:
-    if path.is_symlink():
-        raise ValueError("运行环境记录不能是符号链接。")
+    reject_symlink_components(path)
     if not path.exists():
         return None
     if not path.is_file() or path.stat().st_size > 8192:
@@ -49,14 +66,14 @@ def read_pointer(path: Path) -> str | None:
 
 
 def write_pointer(path: Path, value: str) -> None:
-    if path.is_symlink():
-        raise ValueError("不能覆盖链接记录。")
+    reject_symlink_components(path)
     with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=path.parent,
                                      prefix=".jianwei-", delete=False) as stream:
         temporary = Path(stream.name)
         stream.write(value + "\n")
     try:
         temporary.replace(path)
+        reject_symlink_components(path)
     finally:
         temporary.unlink(missing_ok=True)
 
@@ -87,6 +104,63 @@ def verify_python(python: Path) -> None:
                             text=True, timeout=60, check=False)
     if result.returncode:
         raise ValueError("Python 需要 3.10+，且已安装 requirements.txt 中的精确依赖版本。")
+
+
+def _selected_config(home: Path) -> Path:
+    selected = os.environ.get("TANYUAN_ENV_FILE") or read_pointer(home / "env-file")
+    return Path(selected).expanduser() if selected else home / "config.env"
+
+
+def _credential_status(config: Path) -> dict[str, bool]:
+    file_values: dict[str, bool] = {}
+    reject_symlink_components(config)
+    if not config.exists():
+        return {name: bool(os.environ[name].strip()) if name in os.environ else False
+                for name in CREDENTIALS}
+    if not config.is_file():
+        raise ValueError("凭据路径不是普通文件。")
+    if config.stat().st_size > 65536:
+        raise ValueError("凭据文件过大；请使用不超过 64 KiB 的专用 env 文件。")
+    try:
+        for raw in config.read_text(encoding="utf-8", errors="replace").splitlines():
+            line = raw.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, _, value = line.partition("=")
+            key = key.strip()
+            if key in CREDENTIALS:
+                file_values[key] = bool(value.strip().strip('"').strip("'"))
+    except OSError as error:
+        raise ValueError("无法读取凭据文件；请检查路径与权限。") from error
+    return {
+        name: bool(os.environ[name].strip()) if name in os.environ
+        else file_values.get(name, False)
+        for name in CREDENTIALS
+    }
+
+
+def status() -> dict[str, object]:
+    """Return offline readiness without exposing credential values."""
+    home = state_home()
+    selected = os.environ.get("TANYUAN_PYTHON") or read_pointer(
+        home / "runtimes" / (dependency_id() + ".python")
+    )
+    python_state = "missing"
+    if selected:
+        try:
+            verify_python(interpreter(selected))
+            python_state = "ready"
+        except (OSError, ValueError, subprocess.SubprocessError):
+            python_state = "invalid"
+    config = _selected_config(home)
+    return {
+        "runtime_home": str(home),
+        "runtime_exists": home.is_dir(),
+        "python": python_state,
+        "config_file": str(config),
+        "config_exists": config.is_file(),
+        "credentials": _credential_status(config),
+    }
 
 
 def setup(python: str | None, env_file: str | None) -> None:
@@ -142,8 +216,12 @@ def setup(python: str | None, env_file: str | None) -> None:
                 raise ValueError("默认凭据位置不是文件，未覆盖。")
         write_pointer(config_pointer, str(config))
         write_pointer(pointer, str(executable))
-        print("Jianwei Python 环境已就绪。凭据文件：" + str(config))
+        print("Jianwei skill 运行环境已就绪。位置：" + str(home))
+        print("凭据文件：" + str(config))
         print("请在本地编辑所需凭据；不要在聊天中粘贴。重新运行初始化不会覆盖已有凭据。")
+        if config == home / "config.env":
+            print("提示：默认凭据文件随此插件副本保存，升级或卸载可能移除；"
+                  "需要长期保留时，请用 --env-file 选择你自己管理的私密文件。")
     finally:
         lock.rmdir()
 
@@ -158,6 +236,8 @@ def launch() -> None:
     env = dict(os.environ)
     env["TANYUAN_PYTHON"] = str(executable)
     env["PYTHONDONTWRITEBYTECODE"] = "1"
+    if not env.get("TANYUAN_CACHE"):
+        env["TANYUAN_CACHE"] = str(home / "cache")
     if not env.get("TANYUAN_ENV_FILE"):
         configured = read_pointer(home / "env-file")
         if configured:

@@ -51,19 +51,19 @@ dsh web
 
 若 shell 没有 `dsh` 但装了 Desktop，使用应用内插件管理。不要重置已有 profile；CLI 与 Desktop 的 profile 不是可以随意互换的名称。
 
-技能名是 **`jianwei-tanyuan`**、**`jianwei-research`**，可从技能入口选择或直接要求 agent 使用。包只注册技能，不更换模型、agent preset、多 agent 工具或权限。接口以 DSH **0.2.1-rc.3** 核查；其他 profile 需分别安装。
+技能名是 **`jianwei-setup`**、**`jianwei-tanyuan`**、**`jianwei-research`**，可从技能入口选择或直接要求 agent 使用。包只注册技能，不更换模型、agent preset、多 agent 工具或权限。接口以 DSH **0.2.1-rc.3** 核查；其他 profile 需分别安装。
 
 Git 包包含准备好的 ESM 注册文件，没有 prepare/postinstall 或 npm 构建步骤。Python 依赖在下面的显式初始化中准备。
 
 包声明 DSH 范围 `>=0.2.1-rc.3 <0.3.0`。当前 candidate 仅通过本地 DSH registration contract；正式发布前必须再以 0.2.1-rc.3 的市场校验器验证索引与 `plugin/` 子目录安装目标，并完成真实安装验收。范围内其他版本未逐个实测，不代表全版本验收。
 
-## 共同的首次配置（仅一次）
+## 当前安装副本的首次配置
 
 安装包可见不代表 Python 数据环境已经准备好。建议在宿主里发：
 
-> 使用 Jianwei 的 tanyuan skill。保持当前工作目录，先运行它的 bin/ty --version；若提示缺少环境，按提示运行本插件的 scripts/setup.py。只准备环境和空白凭据文件，告诉我文件位置，不要查询数据，也不要索取或显示密钥。
+> 使用 Jianwei 的 setup skill 检查并准备当前安装副本。保持当前工作目录；只准备隔离 Python 环境和空白凭据文件，告诉我写入位置，不要查询数据，也不要索取或显示密钥。
 
-初始化需要 Python 3.10+，在 `~/.local/share/jianwei/` 建立环境，从 `https://pypi.org/simple` 安装固定依赖，并创建 `config.env`。如果宿主要求写用户目录的许可，按提示处理。它不注册数据账户、不充值、不验证付费接口。
+初始化需要 Python 3.10+，默认只在当前 Jianwei 安装副本的 `.runtime/` 内建立环境、缓存和 `config.env`，从 `https://pypi.org/simple` 安装固定依赖；不写任务目录、全局 PATH 或系统应用目录。如果当前安装副本不可写，setup skill 会请用户明确选择一个可写的绝对路径作为 `JIANWEI_HOME`。它不注册数据账户、不充值、不验证付费接口。
 
 也可以手工操作。请由宿主定位安装目录：tanyuan 的路径形如 `<插件根>/skills/tanyuan/SKILL.md`。
 
@@ -76,18 +76,18 @@ python3 "/absolute/path/to/installed/jianwei/scripts/setup.py" \
   --env-file "/absolute/path/to/your/private.env"
 ```
 
-在自己的编辑器中填写输出路径所指的文件，只配置需要的服务。不要把密钥发到聊天或提交到 Git。重复初始化会保留文件。若已有符合 requirements.txt 的 Python，可追加 `--python /absolute/path/to/python`，避免下载依赖。
+在自己的编辑器中填写输出路径所指的文件。全功能需要用户自行购买或申请并配置 `TUSHARE_TOKEN`、`TAVILY_API_KEY`、`DEEPSEEK_API_KEY`，为 SEC 请求填写联系标识 `SEC_CONTACT`，且账户具有相应接口权限。不要把密钥发到聊天或提交到 Git。重复初始化会保留文件。若已有符合 requirements.txt 的 Python，可追加 `--python /absolute/path/to/python`，避免下载依赖。
 
-换工作目录无需重新安装。可显式用 `TANYUAN_ENV_FILE` 切换某次调用的配置，用 `TANYUAN_PYTHON` 选解释器。若自定义 `JIANWEI_HOME`，初始化与执行应保持一致。
+换工作目录无需重新安装。可显式用 `TANYUAN_ENV_FILE` 切换某次调用的配置，用 `TANYUAN_PYTHON` 选解释器。若自定义 `JIANWEI_HOME`，初始化与执行及后续新会话都必须由宿主提供同一变量；setup 不会擅自修改 shell 或宿主配置。可用 `python3 "<插件根>/scripts/setup.py" --status` 离线检查 Python 与四项凭据名称，只返回状态而不显示值。
 
 ## 自行验收
 
 选择开发仓之外的空目录，再选择另一个已有工作目录，各开一次新任务。
 
-1. **发现与运行**：两项技能可见；`ty --version` 返回 tanyuan 版本，`ty tools` 能列出能力；第二个目录不再安装依赖。
+1. **发现与运行**：三项技能可见；setup 能解释当前状态，`ty --version` 返回 tanyuan 版本，`ty tools` 能列出能力；第二个任务目录不再安装依赖。
 2. **取数**：用已配置服务完成熟悉的小查询，检查标的、时间、单位和来源；缺权限或服务失败应明确报告。
 3. **研究与协作**：给出值得分工的问题，要求宿主原生子 agent 调查，另一个未承担原论证的 agent 复核关键结论。检查实际执行记录及有出处的自然语言底稿，不只看最终文字宣称“已复核”。
-4. **产物位置**：底稿与附件留在任务目录，插件目录没有研究产物、venv 或凭据。
+4. **产物位置**：底稿与附件留在任务目录；Python 环境、默认凭据模板和缓存只在当前插件副本的 `.runtime/`，任务目录没有 `.tanyuan` 缓存。
 
 示例：
 
@@ -101,6 +101,6 @@ research 可使用 tanyuan，也可自行 Web 搜索。如果宿主禁用了子 
 - Codex：`codex plugin marketplace upgrade jianwei` 刷新目录，再 `codex plugin add jianwei@jianwei` 安装目录指定版本；卸载用 `codex plugin remove jianwei@jianwei`，选项以当前 `--help` 为准。
 - DSH Desktop 0.2.1-rc.3：刷新「发现」中的见微市场。若显示「有更新」，先在「已安装」卸载 Jianwei，再回市场安装推荐版本。当前第三方插件的更新提示不是一键升级按钮；用户不用修改版本号，索引源 URL 保持不变。卸载后若提示重启，先重启再安装。已有 0.1.0 的用户也按此操作。CLI 可先 `dsh plugin --profile web remove jianwei`，再执行上面的安装命令；以实际 profile 为准。未来客户端能力以其界面为准，不以官方 master 的未发布功能作为保证。
 
-依赖清单变化后重新执行新版本的 setup.py。用户环境按依赖摘要隔离，凭据保留。共用的 `~/.local/share/jianwei/` 不由单个宿主卸载时自动删除；确认不再使用后可自行清理。任务研究文件始终保留。
+插件升级或依赖清单变化后，对新的安装副本重新运行 setup。默认 `.runtime/` 随旧安装副本一起移除；需要跨升级保留凭据时，使用 `--env-file` 指向用户自己管理的私密文件。任务研究文件始终保留。
 
 已有独立 tanyuan 安装可先并存，明确指定 Jianwei 中的技能。不会自动覆盖或卸载旧 skill。
