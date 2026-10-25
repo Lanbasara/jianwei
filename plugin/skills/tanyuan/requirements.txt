@@ -1,0 +1,5 @@
+# Existing runtime dependency; install from https://pypi.org/project/requests/.
+requests==2.34.2
+# Local PDF text extraction; lazily loaded in a bounded subprocess.
+# https://pypi.org/project/pypdf/6.21.2/ (official metadata: no listed vulnerabilities at 2026-10-24).
+pypdf==6.21.2

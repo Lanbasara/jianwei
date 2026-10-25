@@ -1,0 +1,15 @@
+#!/usr/bin/env python3
+"""Delivery wrapper; the original Tanyuan entry is retained as ty-upstream."""
+import sys
+from pathlib import Path
+
+if sys.version_info < (3, 10):
+    raise SystemExit("Jianwei requires Python 3.10+.")
+sys.dont_write_bytecode = True
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts"))
+from runtime import launch
+
+try:
+    launch()
+except (OSError, ValueError) as error:
+    raise SystemExit("ty: " + str(error)) from None
