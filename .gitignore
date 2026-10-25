@@ -5,7 +5,9 @@
 # do not add a broad `!plugin/**` rule that would re-include plugin secrets.
 .env
 .env.*
+*.env
 !.env.example
+!*.env.example
 .venv/
 **/__pycache__/
 *.py[cod]
