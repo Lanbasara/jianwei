@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "jianwei",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "见微：探源数据能力与专业投资研究 skills，使用宿主原生多 agent。",
   "author": {
     "name": "Lanbasara"

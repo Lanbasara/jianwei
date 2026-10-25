@@ -1,4 +1,4 @@
-# Jianwei 0.1.0 安装与自行验收
+# Jianwei 0.1.1 安装与自行验收
 
 当前含 tanyuan + research，暂不含 report。不需要另装 tanyuan，也不需要克隆 huoguang。
 
@@ -28,18 +28,20 @@ CLI 语法针对本机 **0.163.0-alpha.11.2** 的帮助核对。若旧版没有 
 
 ## DeepSeek Harness（DSH）
 
-**Desktop**：在当前 profile 的 Plugins / 插件管理页面安装外部 bundle，输入：
+**Desktop（推荐：市场安装）**：打开「插件 → 发现 → 添加索引源」，填入完整地址：
 
 ```text
-github:Lanbasara/jianwei#v0.1.0
+https://raw.githubusercontent.com/Lanbasara/jianwei-marketplace/main/dsh/index.json
 ```
 
-确认包名 `jianwei` 并启用，按提示重载或重启，然后在该 profile 新建其他工作目录的任务。若界面提供 Git URL 输入，也可使用 `https://github.com/Lanbasara/jianwei.git#v0.1.0`。
+在见微市场中选择 `jianwei`，确认版本并安装、启用，按宿主提示重载或重启。然后在同一 profile 的任意工作目录新建任务。若没有「发现」页，先在实验性插件中启用自定义插件市场；也可通过「添加插件」直接输入 `github:Lanbasara/jianwei#v0.1.1`。
+
+此地址是 DSH 原生 format 1 市场索引，不是 npm registry，也不是 GitHub 仓库页面。索引把版本映射到固定 Git commit，由 DSH 生成安装地址。当前未发布 npm 包，请勿输入裸包名 `jianwei` 从 npm 安装。
 
 **CLI**：使用你实际运行的 profile，下面以 `web` 为例：
 
 ```bash
-dsh plugin --profile web add github:Lanbasara/jianwei#v0.1.0
+dsh plugin --profile web add github:Lanbasara/jianwei#v0.1.1
 dsh web
 ```
 
@@ -48,6 +50,8 @@ dsh web
 技能名是 **`jianwei-tanyuan`**、**`jianwei-research`**，可从技能入口选择或直接要求 agent 使用。包只注册技能，不更换模型、agent preset、多 agent 工具或权限。接口以 DSH **0.2.1-rc.3** 核查；其他 profile 需分别安装。
 
 Git 包包含准备好的 ESM 注册文件，没有 prepare/postinstall 或 npm 构建步骤。Python 依赖在下面的显式初始化中准备。
+
+包声明 DSH 范围 `>=0.2.1-rc.3 <0.3.0`，本次以 0.2.1-rc.3 的市场校验器验证；范围内其他版本未逐个实测，不代表全版本验收。
 
 ## 共同的首次配置（仅一次）
 
@@ -91,7 +95,7 @@ research 可使用 tanyuan，也可自行 Web 搜索。如果宿主禁用了子 
 
 - Claude：在原生插件页面刷新 `jianwei` 市场并更新插件。卸载：`claude plugin uninstall jianwei@jianwei --scope user`。
 - Codex：`codex plugin marketplace upgrade jianwei` 刷新目录，再 `codex plugin add jianwei@jianwei` 安装目录指定版本；卸载用 `codex plugin remove jianwei@jianwei`，选项以当前 `--help` 为准。
-- DSH：在插件页面更新 Git 版本；CLI 把 tag 改成新版本重新 add。卸载示例：`dsh plugin --profile web remove jianwei`。固定 tag 不自动追踪 main。
+- DSH Desktop 0.2.1-rc.3：刷新「发现」中的见微市场。若显示「有更新」，先在「已安装」卸载 Jianwei，再回市场安装推荐版本。当前第三方插件的更新提示不是一键升级按钮；用户不用修改版本号，索引源 URL 保持不变。卸载后若提示重启，先重启再安装。已有 0.1.0 的用户也按此操作。CLI 可先 `dsh plugin --profile web remove jianwei`，再执行上面的安装命令；以实际 profile 为准。未来客户端能力以其界面为准，不以官方 master 的未发布功能作为保证。
 
 依赖清单变化后重新执行新版本的 setup.py。用户环境按依赖摘要隔离，凭据保留。共用的 `~/.local/share/jianwei/` 不由单个宿主卸载时自动删除；确认不再使用后可自行清理。任务研究文件始终保留。
 

@@ -2,7 +2,7 @@
 
 一次安装，获得探源数据能力与专业投资研究 skills。支持 Claude Code、Codex、DeepSeek Harness（DSH）。
 
-当前版本 **0.1.0**，包含 **tanyuan 0.5.0** 的 skill、ty CLI、参考资料，以及 **research** 的调查、分析与独立复核能力。研究使用宿主原生多 agent，也可自由使用 Web 等工具。底稿始终是自然语言文档。
+当前版本 **0.1.1**，包含 **tanyuan 0.5.0** 的 skill、ty CLI、参考资料，以及 **research** 的调查、分析与独立复核能力。研究使用宿主原生多 agent，也可自由使用 Web 等工具。底稿始终是自然语言文档。
 
 `report` 尚未交付，完成后作为同一插件内的 skill 加入。
 
@@ -22,10 +22,18 @@ codex plugin marketplace add Lanbasara/jianwei-marketplace
 codex plugin add jianwei@jianwei
 
 # DSH CLI：使用实际 profile；下面以 web 为例
-dsh plugin --profile web add github:Lanbasara/jianwei#v0.1.0
+dsh plugin --profile web add github:Lanbasara/jianwei#v0.1.1
 ```
 
-DSH Desktop 使用当前 profile 的插件管理页面添加同一 Git 包。其技能名为 `jianwei-tanyuan`、`jianwei-research`，避免占用通用名称。Claude 使用 `/jianwei:tanyuan`、`/jianwei:research`。Codex 可自然语言指定“Jianwei 插件的 research/tanyuan”，以实际技能列表为准。
+DSH Desktop 推荐在「插件 → 发现 → 添加索引源」添加：
+
+```text
+https://raw.githubusercontent.com/Lanbasara/jianwei-marketplace/main/dsh/index.json
+```
+
+从见微市场安装 Jianwei。索引由我们维护，Git commit 由 DSH 自动选择，无需用户编辑版本地址。0.2.1-rc.3 的第三方插件升级仍需卸载后从市场重装；当前没有发布 npm 包。
+
+DSH 其技能名为 `jianwei-tanyuan`、`jianwei-research`，避免占用通用名称。Claude 使用 `/jianwei:tanyuan`、`/jianwei:research`。Codex 可自然语言指定“Jianwei 插件的 research/tanyuan”，以实际技能列表为准。
 
 ## 首次准备与任意目录使用
 
