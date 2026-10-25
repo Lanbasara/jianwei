@@ -3,6 +3,18 @@
 Read `jianwei/ARCHITECTURE.md` before changing packaging, runtime, skills, or
 host integration.
 
+## Development workflow
+
+For each new development request in a new conversation, fetch `origin` and
+create a fresh task branch or worktree directly from the latest `origin/main`.
+Before the first edit, verify that `HEAD` equals `origin/main` and the task
+worktree is clean. Use `codex/<task-slug>` unless the user specifies a branch;
+reuse an existing branch only when the user explicitly asks to continue it.
+
+Keep the canonical `main` worktree on `main` and clean. Make changes and commits
+only on the task branch. After the task is finished and its work is preserved
+remotely, remove the local task worktree and branch.
+
 ## Repository boundaries
 
 - `jianwei/` is the Jianwei-owned source layer.
