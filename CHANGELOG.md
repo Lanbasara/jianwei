@@ -1,6 +1,13 @@
 # Changelog
 
-## 0.2.0 - 2026-10-25
+## 0.2.1 - 2026-10-25
+
+- Fix checkout-free release publication by explicitly selecting the GitHub
+  repository when creating the protected Release.
+- Supersede the unpublished `v0.2.0` tag; Marketplace distribution begins at
+  `v0.2.1`.
+
+## 0.2.0 - 2026-10-25 (not published)
 
 - Add one reproducible Jianwei bundle for Claude Code, Codex, and DSH.
 - Add guided setup, Tanyuan 0.5.0 data access, research, HTML report, and
