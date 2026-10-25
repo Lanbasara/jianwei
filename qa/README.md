@@ -28,8 +28,9 @@ Adding another support file requires an exact exclusion in
 ## Classification rules
 
 - `ci` suites are offline, credential-free, and are the only suites eligible
-  for the current pull-request gate. A release gate does not exist yet; its
-  workflow, registry values, and tests must be added atomically.
+  for pull-request or release gates. The release gate contains the same
+  deterministic checks as the pull-request gate plus the repeatable release
+  artifact contract.
 - `live` suites are manual, networked, non-gating, and require an explicit
   `--allow-network` invocation.
 - `ai-eval` suites must always be `execution=local`, `gates=[]`, and
@@ -70,6 +71,13 @@ may separately supply the official DSH validator to
 `qa/jianwei/check_market.mjs` and run the local Claude validator against a
 generated candidate.
 
+`release-artifact` builds byte-for-byte repeatable ZIPs from committed Git
+objects, never from the working tree. Its Marketplace base is read with
+`git show HEAD:dsh/index.json` from a local checkout whose committed HEAD must
+equal `origin/main`; the base commit and index digest are recorded in
+`release.json`. The resulting Marketplace ZIP is an Actions review artifact,
+not a GitHub Release asset and not an automatic Marketplace change.
+
 ## Commands
 
 ```bash
@@ -78,9 +86,11 @@ python qa/policy_check.py
 python -m unittest discover -s qa/meta -p 'test_*.py' -v
 python qa/run.py --list
 python qa/run.py --gate pull-request
+python qa/run.py --gate release
 
 # Run only the self-contained Marketplace tracer.
 python qa/run.py --suite marketplace-contract
+python qa/run.py --suite release-artifact
 
 export JIANWEI_QA_HOME=/absolute/path/to/local/golden
 python qa/run.py --suite evidence-local

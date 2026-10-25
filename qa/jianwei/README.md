@@ -39,3 +39,29 @@ Git 仓库中的 package、engine、commit 时间和（对 plugin 布局）完�
 三端 source、历史追加和拒绝路径，不联网，不调用宿主 CLI。外部官方 DSH
 validator 仍由 `check_market.mjs` 作为人工发布检查接入，不进入 PR gate；
 Claude 本地严格校验和真实宿主安装也属于发布验证，而非本 suite 的承诺。
+
+## Source release tracer
+
+`scripts/build_jianwei_release.py` 从已提交的 `<commit>:plugin` 生成确定性
+`jianwei-plugin.zip`，同时从本地 `jianwei-marketplace` checkout 的 committed
+`HEAD:dsh/index.json` 追加并生成 Marketplace candidate ZIP。它不读取两边的
+worktree 内容；`release.json` 固定 Jianwei commit、Marketplace base commit、
+index digest 和两个 ZIP 的 digest。`workflow_dispatch` 总是使用完整 SHA，
+只能生成 `official=false` 的预演产物；正式 `vX.Y.Z` tag 还必须匹配插件版本、
+匹配 workflow commit，并属于 `origin/main` 历史。
+
+`.github/workflows/release.yml` 把完整 release QA 和纯净产物构建分为两个
+`contents:read` job；clean build 使用 fresh checkout，不安装第三方依赖，上传产品
+和 Marketplace candidate 供审查，但不修改任何远程仓库。publish job 只有在
+tag push 且 repository configuration variable `JIANWEI_RELEASE_ENABLED` 精确为 `true` 时进入
+`source-release` environment，随后校验 checksum、生成 attestation，并只把
+产品 ZIP、`release.json` 和 `SHA256SUMS` 发布到 GitHub Release；Marketplace
+ZIP 明确不发布、不自动提交、不创建 PR、不合并。
+
+启用远程发布前，必须先由管理员创建受保护的 `source-release` environment，
+配置 required reviewers 和 tag ruleset，并确认不可绕过的审核行为；若仓库设置
+支持 GitHub Immutable Releases，还应由管理员人工启用。完成这些保护后才可把
+repository configuration variable `JIANWEI_RELEASE_ENABLED` 设为 `true`。
+environment-level variable 不能替代该 repository variable，因为 job 启动与审批前
+无法依赖它。
+默认未配置或不等于 `true` 时，tag workflow 也只构建验证产物。

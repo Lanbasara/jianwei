@@ -17,7 +17,7 @@ SUITE_FIELDS = {"id", "kind", "execution", "gates", "network",
                 "credentials", "runner", "files"}
 KINDS = {"deterministic", "build-contract", "live", "ai-eval"}
 EXECUTIONS = {"ci", "manual", "local"}
-GATES = {"pull-request"}
+GATES = {"pull-request", "release"}
 CREDENTIALS = {"none", "external-local"}
 RUNNER_CAPABILITIES = {
     "policy-meta": {
@@ -62,6 +62,14 @@ RUNNER_CAPABILITIES = {
         "files": (
             "qa/jianwei/test_marketplace.py",
             "scripts/build_jianwei_marketplace.py",
+        ),
+    },
+    "release-artifact": {
+        "network": False,
+        "runtime": "python",
+        "files": (
+            "qa/jianwei/test_release.py",
+            "scripts/build_jianwei_release.py",
         ),
     },
     "evidence-local": {

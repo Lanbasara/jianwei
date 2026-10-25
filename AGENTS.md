@@ -45,6 +45,13 @@ never edit a catalog candidate by hand or fall back to the compatibility
 package at the repository root. The builder must authenticate the complete
 tagged `plugin/` tree against its manifest and must verify imported catalog
 history against the same local Git repository before publishing a candidate.
+Source release artifacts must be produced by `scripts/build_jianwei_release.py`
+from committed `plugin/` Git objects and a committed Marketplace `origin/main`
+index. A workflow-dispatch build is a preview, never a formal release. Only a
+stable version tag contained in `origin/main` may reach the protected
+`source-release` environment. Marketplace candidates remain review artifacts;
+this repository never writes, opens a pull request against, or merges the
+Marketplace repository automatically.
 
 AI-dependent quality evaluation is advisory and local-only. It must be
 explicitly classified and must never become a pull-request, release, install,

@@ -126,6 +126,150 @@ def parse_workflow(text: str) -> dict[str, object]:
     return parsed
 
 
+def validate_release_workflow(workflow: dict[str, object], text: str) -> None:
+    assert "pull_request_target" not in text
+    assert "secrets." not in text
+    assert set(workflow) == {"name", "on", "permissions", "concurrency", "jobs"}
+    assert workflow["name"] == "Source Release"
+    assert workflow["on"] == {
+        "push": {"tags": ["v*.*.*"]}, "workflow_dispatch": {},
+    }
+    assert workflow["permissions"] == {"contents": "read"}
+    assert workflow["concurrency"] == {
+        "group": "source-release-${{ github.ref }}", "cancel-in-progress": False,
+    }
+    jobs = workflow["jobs"]
+    assert set(jobs) == {"qa", "build", "publish"}
+    qa = jobs["qa"]
+    build = jobs["build"]
+    publish = jobs["publish"]
+    assert set(qa) == {"runs-on", "timeout-minutes", "permissions", "steps"}
+    assert set(build) == {"runs-on", "timeout-minutes", "permissions", "steps"}
+    assert set(publish) == {
+        "needs", "if", "runs-on", "timeout-minutes", "environment", "permissions", "steps",
+    }
+    assert qa["runs-on"] == build["runs-on"] == publish["runs-on"] == "ubuntu-latest"
+    assert qa["timeout-minutes"] == 30
+    assert build["timeout-minutes"] == 15
+    assert publish["timeout-minutes"] == 10
+    assert qa["permissions"] == {"contents": "read"}
+    assert build["permissions"] == {"contents": "read"}
+    assert publish["permissions"] == {
+        "contents": "write", "id-token": "write", "attestations": "write",
+    }
+    assert publish["environment"] == "source-release"
+    assert publish["needs"] == ["qa", "build"]
+    assert publish["if"] == (
+        "${{ github.event_name == 'push' && github.ref_type == 'tag' && "
+        "vars.JIANWEI_RELEASE_ENABLED == 'true' }}"
+    )
+    qa_steps = qa["steps"]
+    build_steps = build["steps"]
+    publish_steps = publish["steps"]
+    assert qa_steps == [
+        {
+            "name": "Check out source",
+            "uses": "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            "with": {"persist-credentials": False},
+        },
+        {
+            "name": "Set up Python",
+            "uses": "actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0",
+            "with": {
+                "python-version": "3.12", "cache": "pip",
+                "cache-dependency-path": "tanyuan/requirements.txt",
+            },
+        },
+        {"name": "Install pinned test dependencies",
+         "run": "python -m pip install -r tanyuan/requirements.txt"},
+        {"name": "Validate QA classification", "run": "python qa/policy_check.py"},
+        {"name": "Run release gate", "run": "python qa/run.py --gate release"},
+    ]
+    assert build_steps == [
+        {
+            "name": "Check out source history",
+            "uses": "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            "with": {"fetch-depth": 0, "persist-credentials": False},
+        },
+        {
+            "name": "Check out Marketplace main as data",
+            "uses": "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            "with": {
+                "repository": "Lanbasara/jianwei-marketplace", "ref": "main",
+                "path": ".release-input/marketplace", "fetch-depth": 1,
+                "persist-credentials": False,
+            },
+        },
+        {"name": "Prepare ignored artifact parent", "run": "mkdir dist"},
+        {
+            "name": "Build deterministic release artifacts",
+            "run": "python3 scripts/build_jianwei_release.py --github-context --required-ancestor origin/main --release-repo . --marketplace-repo .release-input/marketplace --out dist/release",
+        },
+        {
+            "name": "Verify artifact checksums", "run": "sha256sum -c SHA256SUMS",
+            "working-directory": "dist/release",
+        },
+        {
+            "name": "Upload release and Marketplace candidates",
+            "uses": "actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9",
+            "with": {
+                "name": "jianwei-source-release-${{ github.sha }}", "path": "dist/release",
+                "if-no-files-found": "error", "include-hidden-files": True,
+                "retention-days": 30,
+            },
+        },
+    ]
+    assert publish_steps == [
+        {
+            "name": "Download verified build artifact",
+            "uses": "actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333",
+            "with": {
+                "name": "jianwei-source-release-${{ github.sha }}", "path": "dist/release",
+            },
+        },
+        {
+            "name": "Verify downloaded checksums", "run": "sha256sum -c SHA256SUMS",
+            "working-directory": "dist/release",
+        },
+        {
+            "name": "Attest product and candidate provenance",
+            "uses": "actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6",
+            "with": {
+                "subject-path": (
+                    "dist/release/jianwei-plugin.zip, "
+                    "dist/release/jianwei-marketplace-candidate.zip, "
+                    "dist/release/release.json"
+                ),
+            },
+        },
+        {
+            "name": "Publish GitHub Release",
+            "run": "gh release create \"$GITHUB_REF_NAME\" dist/release/jianwei-plugin.zip dist/release/release.json dist/release/SHA256SUMS --verify-tag --generate-notes --title \"$GITHUB_REF_NAME\"",
+            "env": {"GH_TOKEN": "${{ github.token }}"},
+        },
+    ]
+    all_uses = [
+        step["uses"] for step in [*qa_steps, *build_steps, *publish_steps] if "uses" in step
+    ]
+    allowed_actions = {
+        "actions/checkout", "actions/setup-python", "actions/upload-artifact",
+        "actions/download-artifact", "actions/attest",
+    }
+    for use in all_uses:
+        action, sha = use.split("@", 1)
+        assert action in allowed_actions
+        assert re.fullmatch(r"[0-9a-f]{40}", sha)
+    release_step = publish_steps[-1]
+    assert "jianwei-marketplace-candidate.zip" not in release_step["run"]
+    assert "--clobber" not in release_step["run"]
+    assert "gh release edit" not in release_step["run"]
+    assert "gh release upload" not in release_step["run"]
+    assert not any("pip" in step.get("run", "") for step in build_steps)
+    assert not any("qa/" in step.get("run", "") for step in build_steps)
+    assert all("upload-artifact" not in step.get("uses", "") for step in qa_steps)
+    assert all("checkout" not in step.get("uses", "") for step in publish_steps)
+
+
 class PolicyValidationTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
@@ -147,7 +291,7 @@ class PolicyValidationTests(unittest.TestCase):
         offline = next(item for item in suites if item["id"] == "tanyuan-offline")
         live = next(item for item in suites if item["id"] == "tanyuan-live")
         self.assertFalse(set(offline["files"]).intersection(live["files"]))
-        self.assertGreaterEqual(len(policy_check.scan_entry_points(ROOT)), 17)
+        self.assertGreaterEqual(len(policy_check.scan_entry_points(ROOT)), 18)
         self.assertEqual(policy_check.RUNNERS, set(qa_run.RUNNERS))
         for item in suites:
             self.assertEqual(
@@ -155,6 +299,9 @@ class PolicyValidationTests(unittest.TestCase):
             )
         pull_request = qa_run.select_gate(suites, "pull-request")
         self.assertNotIn("tanyuan-live", {item["runner"] for item in pull_request})
+        release_gate = qa_run.select_gate(suites, "release")
+        self.assertNotIn("tanyuan-live", {item["runner"] for item in release_gate})
+        self.assertNotIn("evidence-local", {item["runner"] for item in release_gate})
 
     def test_offline_and_live_file_manifests_cannot_be_swapped(self):
         data = policy_check.read_json(policy_check.REGISTRY)
@@ -178,6 +325,18 @@ class PolicyValidationTests(unittest.TestCase):
         test_file = next(path for path in manifest if path.startswith("qa/jianwei/"))
         with patch.object(qa_run, "run_command") as command:
             qa_run.run_marketplace_contract({})
+        argv, passed_env = command.call_args.args
+        self.assertEqual(
+            argv,
+            [sys.executable, "-m", "unittest", "-v", qa_run.python_module(test_file)],
+        )
+        self.assertEqual(passed_env, {})
+
+    def test_release_runner_is_derived_from_its_capability_manifest(self):
+        manifest = policy_check.RUNNER_CAPABILITIES["release-artifact"]["files"]
+        test_file = next(path for path in manifest if path.startswith("qa/jianwei/"))
+        with patch.object(qa_run, "run_command") as command:
+            qa_run.run_release_artifact({})
         argv, passed_env = command.call_args.args
         self.assertEqual(
             argv,
@@ -283,15 +442,13 @@ class SelectionTests(unittest.TestCase):
         self.assertEqual([item["id"] for item in qa_run.select_gate(suites, "pull-request")],
                          ["ci"])
 
-    def test_release_gate_is_not_a_slice2b_cli_choice(self):
-        with qa_run.gate_environment() as env:
-            result = subprocess.run(
-                [sys.executable, "qa/run.py", "--gate", "release"], cwd=ROOT,
-                env=env, check=False, shell=False,
-                capture_output=True, text=True, timeout=30,
-            )
-        self.assertEqual(result.returncode, 2)
-        self.assertIn("invalid choice", result.stderr)
+    def test_release_gate_selects_only_offline_ci(self):
+        suites = policy_check.load_registry()
+        selected = qa_run.select_gate(suites, "release")
+        self.assertIn("release-artifact", {item["id"] for item in selected})
+        self.assertTrue(all(item["execution"] == "ci" for item in selected))
+        self.assertTrue(all(not item["network"] for item in selected))
+        self.assertTrue(all(item["credentials"] == "none" for item in selected))
 
     def test_gate_environment_is_minimal_and_isolates_home_credentials(self):
         with tempfile.TemporaryDirectory() as source_folder:
@@ -481,6 +638,47 @@ class WorkflowTests(unittest.TestCase):
         ])
         self.assertIn("@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1", text)
         self.assertIn("@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0", text)
+
+    def test_release_workflow_is_tag_guarded_pinned_and_least_privilege(self):
+        text = (ROOT / ".github/workflows/release.yml").read_text(encoding="utf-8")
+        validate_release_workflow(parse_workflow(text), text)
+
+    def test_release_workflow_security_mutations_are_rejected(self):
+        text = (ROOT / ".github/workflows/release.yml").read_text(encoding="utf-8")
+        workflow = parse_workflow(text)
+        mutations = []
+        broad_qa = copy.deepcopy(workflow)
+        broad_qa["jobs"]["qa"]["permissions"] = {"contents": "write"}
+        mutations.append(broad_qa)
+        dispatch_publish = copy.deepcopy(workflow)
+        dispatch_publish["jobs"]["publish"]["if"] = "${{ github.event_name == 'workflow_dispatch' }}"
+        mutations.append(dispatch_publish)
+        unpinned = copy.deepcopy(workflow)
+        unpinned["jobs"]["build"]["steps"][0]["uses"] = "actions/checkout@main"
+        mutations.append(unpinned)
+        leaked_marketplace = copy.deepcopy(workflow)
+        leaked_marketplace["jobs"]["publish"]["steps"][-1]["run"] += (
+            " dist/release/jianwei-marketplace-candidate.zip"
+        )
+        mutations.append(leaked_marketplace)
+        ignored_gate_failure = copy.deepcopy(workflow)
+        release_gate = next(
+            step for step in ignored_gate_failure["jobs"]["qa"]["steps"]
+            if step["name"] == "Run release gate"
+        )
+        release_gate["continue-on-error"] = True
+        mutations.append(ignored_gate_failure)
+        skipped_checksum = copy.deepcopy(workflow)
+        checksum = next(
+            step for step in skipped_checksum["jobs"]["build"]["steps"]
+            if step["name"] == "Verify artifact checksums"
+        )
+        checksum["if"] = False
+        mutations.append(skipped_checksum)
+        for mutation in mutations:
+            with self.subTest(mutation=mutation):
+                with self.assertRaises(AssertionError):
+                    validate_release_workflow(mutation, text)
 
     def test_only_fixed_build_runner_has_a_node_capability(self):
         node_capabilities = {
