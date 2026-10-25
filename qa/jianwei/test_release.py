@@ -16,11 +16,19 @@ from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))
+sys.path.insert(0, str(ROOT / "qa"))
 
 import build_jianwei_marketplace as marketplace  # noqa: E402
 import build_jianwei_release as release  # noqa: E402
+import policy_check  # noqa: E402
 
-_verifier_path = ROOT / ".agents/skills/jianwei-release/scripts/verify_artifact.py"
+_verifier_files = [
+    item for item in policy_check.RUNNER_CAPABILITIES["release-artifact"]["files"]
+    if item.endswith("/verify_artifact.py")
+]
+if len(_verifier_files) != 1:
+    raise RuntimeError("release-artifact manifest must name one artifact verifier")
+_verifier_path = ROOT / _verifier_files[0]
 _verifier_spec = importlib.util.spec_from_file_location("release_artifact_verifier", _verifier_path)
 if _verifier_spec is None or _verifier_spec.loader is None:
     raise RuntimeError("unable to load internal release artifact verifier")
@@ -141,6 +149,38 @@ class ReleaseContract(unittest.TestCase):
             self.base / name, ref or self.commit, self.repo, self.market, **kwargs,
         )
 
+    def verify(self, out: Path, *, official: bool = False, **kwargs: object) -> dict[str, object]:
+        data = json.loads((out / "release.json").read_text(encoding="utf-8"))
+        return verifier.verify(
+            out,
+            expected_version="0.2.0",
+            expected_commit=self.commit,
+            expected_marketplace_base=self.market_commit,
+            expected_marketplace_sha256=hashlib.sha256(
+                (out / "jianwei-marketplace-candidate.zip").read_bytes(),
+            ).hexdigest(),
+            expected_marketplace_index_sha256=data["marketplace"]["baseIndexSha256"],
+            official=official,
+            **kwargs,
+        )
+
+    def tamper_candidate(self, out: Path, member: str, raw: bytes) -> None:
+        archive_path = out / "jianwei-marketplace-candidate.zip"
+        replacement = out / "candidate.replacement"
+        with zipfile.ZipFile(archive_path) as source, zipfile.ZipFile(replacement, "w") as target:
+            for info in source.infolist():
+                target.writestr(info, raw if info.filename == member else source.read(info))
+        replacement.replace(archive_path)
+        release_data = json.loads((out / "release.json").read_text(encoding="utf-8"))
+        release_data["marketplace"]["sha256"] = hashlib.sha256(archive_path.read_bytes()).hexdigest()
+        release_data["marketplace"]["size"] = archive_path.stat().st_size
+        write_json(out / "release.json", release_data)
+        checksums = "".join(
+            f"{hashlib.sha256((out / name).read_bytes()).hexdigest()}  {name}\n"
+            for name in sorted(release.OUTPUT_FILES)
+        )
+        (out / "SHA256SUMS").write_text(checksums, encoding="ascii")
+
     def test_same_committed_inputs_are_byte_for_byte_reproducible(self) -> None:
         first = self.build("first")
         (self.repo / "plugin/skills/research/SKILL.md").write_text("dirty\n", encoding="utf-8")
@@ -184,13 +224,7 @@ class ReleaseContract(unittest.TestCase):
         for name in release.OUTPUT_FILES:
             self.assertIn(hashlib.sha256((out / name).read_bytes()).hexdigest(),
                           (out / "SHA256SUMS").read_text(encoding="ascii"))
-        verified = verifier.verify(
-            out,
-            expected_version="0.2.0",
-            expected_commit=self.commit,
-            expected_marketplace_base=self.market_commit,
-            official=False,
-        )
+        verified = self.verify(out)
         self.assertEqual(verified["productFiles"], 4)
         self.assertEqual(set(verified["candidateFiles"]), verifier.CANDIDATE_FILES)
 
@@ -202,14 +236,7 @@ class ReleaseContract(unittest.TestCase):
             required_ancestor="origin/main",
         )
         self.assertTrue(json.loads((out / "release.json").read_text())["official"])
-        verifier.verify(
-            out,
-            expected_version="0.2.0",
-            expected_commit=self.commit,
-            expected_marketplace_base=self.market_commit,
-            official=True,
-            expected_tag="v0.2.0",
-        )
+        self.verify(out, official=True, expected_tag="v0.2.0")
         with self.assertRaises(release.ReleaseError):
             self.build(
                 "wrong-expected", "v0.2.0", expected_commit="f" * 40,
@@ -220,6 +247,72 @@ class ReleaseContract(unittest.TestCase):
             self.build(
                 "not-main", "v0.2.0", expected_commit=self.commit,
                 required_ancestor="origin/main",
+            )
+
+    def test_verifier_rejects_candidate_content_even_with_recomputed_metadata(self) -> None:
+        member = "jianwei-marketplace/.claude-plugin/marketplace.json"
+        mutations = (
+            {"plugins": []},
+            {
+                "name": "jianwei", "description": "见微 Jianwei 专属投资研究插件目录",
+                "owner": {"name": "Lanbasara"},
+                "plugins": [{
+                    "name": "jianwei", "description": "fixture", "extra": True,
+                    "source": {
+                        "source": "git-subdir", "url": marketplace.REPOSITORY_URL,
+                        "path": "plugin", "sha": self.commit,
+                    },
+                }],
+            },
+        )
+        for index, value in enumerate(mutations):
+            with self.subTest(index=index):
+                out = self.build(f"tampered-content-{index}")
+                self.tamper_candidate(
+                    out, member,
+                    (json.dumps(value, ensure_ascii=False, indent=2) + "\n").encode(),
+                )
+                with self.assertRaises(verifier.VerificationError):
+                    self.verify(out)
+
+    def test_verifier_rejects_wrong_candidate_source_identities(self) -> None:
+        member = "jianwei-marketplace/.claude-plugin/marketplace.json"
+        for field, value in (
+            ("path", "./wrong"), ("sha", "f" * 40), ("ref", "v9.9.9"),
+        ):
+            with self.subTest(field=field):
+                out = self.build(f"tampered-source-{field}")
+                with zipfile.ZipFile(out / "jianwei-marketplace-candidate.zip") as archive:
+                    data = json.loads(archive.read(member).decode())
+                data["plugins"][0]["source"][field] = value
+                self.tamper_candidate(
+                    out, member,
+                    (json.dumps(data, ensure_ascii=False, indent=2) + "\n").encode(),
+                )
+                with self.assertRaises(verifier.VerificationError):
+                    self.verify(out)
+
+    def test_verifier_requires_card_bound_candidate_and_index_digests(self) -> None:
+        out = self.build("wrong-card-digests")
+        data = json.loads((out / "release.json").read_text(encoding="utf-8"))
+        common = {
+            "expected_version": "0.2.0",
+            "expected_commit": self.commit,
+            "expected_marketplace_base": self.market_commit,
+            "official": False,
+        }
+        with self.assertRaises(verifier.VerificationError):
+            verifier.verify(
+                out, expected_marketplace_sha256="f" * 64,
+                expected_marketplace_index_sha256=data["marketplace"]["baseIndexSha256"],
+                **common,
+            )
+        with self.assertRaises(verifier.VerificationError):
+            verifier.verify(
+                out,
+                expected_marketplace_sha256=data["marketplace"]["sha256"],
+                expected_marketplace_index_sha256="f" * 64,
+                **common,
             )
 
     def test_dispatch_context_uses_sha_and_never_becomes_official(self) -> None:

@@ -75,6 +75,14 @@ approved expected merge tree; the new commit is the authorized protected derivat
 the exact base+head pair. A mismatch means the source PR was merged but release has not
 started; stop before any release variable or tag and build a new plan.
 
+Before dispatching the preview, independently run the deterministic release builder from
+that verified derived merge commit and the card's exact Marketplace base checkout. Record
+the local product and candidate SHA-256 values and verify the local candidate's exact
+content contract. These hashes are deterministic consequences of the already confirmed
+base, head, expected merge tree, and Marketplace base; they are post-merge verification
+evidence, not new authorization fields and do not change the plan ID. Never derive the
+expected remote-artifact digest from the remote artifact under test.
+
 Dispatch `.github/workflows/release.yml` on that exact `main` through the workflow
 dispatch REST API and retain its returned run ID. Verify event `workflow_dispatch` and
 exact head SHA, not merely recency. Wait for every job to
@@ -92,9 +100,14 @@ Verify `SHA256SUMS`, then parse `release.json` with an exact schema expectation.
 
 Any mismatch ends the release before a tag exists.
 
-Run the Skill's `scripts/verify_artifact.py` with the approved version, merged source
-commit, Marketplace base, and `--official false`. Retain its structured result and
-product digest for the tag-run comparison.
+Require the downloaded preview product and candidate to be byte-for-byte equal to the
+independently built local files. Run the Skill's `scripts/verify_artifact.py` with the
+approved version, merged source commit, Marketplace base, card-bound Marketplace
+base-index digest, independently generated local candidate digest, and `--official
+false`. Retain its structured result and product digest for the tag-run comparison. The
+verifier arguments must include
+`--expected-marketplace-index-sha256` and `--expected-marketplace-sha256`; values read
+only from the artifact under test are not independent expectations.
 
 ## Exact-tag production window
 
@@ -111,8 +124,18 @@ checksum, exact-schema, ZIP inventory, source commit, version, official tag, and
 Marketplace base checks. Require `official` true. Compare the product bytes with the
 verified preview; allow Marketplace candidate differences only where the formal tag/ref
 is expected. A mismatch stops with the immutable tag retained and no Release published.
-Use `scripts/verify_artifact.py` with `--official true`, the exact `--tag`, and the
-preview's product digest as `--expected-product-sha256`.
+Independently run the deterministic release builder from the immutable source tag and
+the card-bound Marketplace base checkout. Require that locally generated candidate's
+SHA-256 to equal the tag-run candidate. Use `scripts/verify_artifact.py` with
+`--official true`, the exact `--tag`, the preview's product digest as
+`--expected-product-sha256`, the locally generated candidate digest as
+`--expected-marketplace-sha256`, and the card-bound committed index digest as
+`--expected-marketplace-index-sha256`.
+
+Before any environment approval, verify the remote tag through the Git data API. The
+`git/ref/tags/<tag>` object must have type `tag`; read that tag object and require its
+target type to be `commit` and its target SHA to equal the approved merged source SHA.
+A lightweight tag or any mismatch permanently stops this version's publication.
 
 Poll the run's pending deployments through:
 
@@ -120,14 +143,16 @@ Poll the run's pending deployments through:
 
 Require exactly one pending deployment named `source-release`, with
 `current_user_can_approve` true. Delete `JIANWEI_RELEASE_TAG` before approving it; if
-deletion fails, set it to the fail-closed sentinel `false` and verify it no longer equals
-the tag. Approve
+deletion succeeds, an immediate exact GET must return HTTP 404. If deletion fails, set
+it to the fail-closed sentinel `false` and require an immediate exact GET value of the
+literal string `false`. Re-check the same exact absent-or-literal-`false` state
+immediately before the approval request. Approve
 only that environment ID through the same run endpoint with state `approved` and a
 release-specific comment. This API approval is covered by the user's single release-card
 confirmation; it is not a second human gate.
 
-Wait for the workflow to succeed. Peel the remote annotated tag through the Git data API
-and require its target commit to be exact. Verify the GitHub Release exists at the exact
+Wait for the workflow to succeed. Repeat the remote annotated-tag object/type/target
+verification after publication. Verify the GitHub Release exists at the exact
 tag, is immutable, is neither draft nor prerelease, and contains only `jianwei-plugin.zip`,
 `release.json`, and `SHA256SUMS`. Download them, verify checksums again, and record the
 attestation and run URL. Do not rely on `targetCommitish` alone to prove the commit. The

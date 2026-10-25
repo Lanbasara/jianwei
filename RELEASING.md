@@ -55,11 +55,15 @@ Jianwei 发布物；Marketplace 仓只负责分发索引。两者不得由同一
 
 4. `Source Release` 再次从标签提交运行完整 release gate 和无第三方依赖的 clean
    build。QA 与 build 都成功后，`publish` job 才会等待 `source-release` 环境审批。
-5. reviewer 核对 tag、commit、版本和 artifact 摘要后批准。流水线创建不可变
+5. 审批前用 Git data API 确认远端 ref 指向 annotated tag object，并且该 tag
+   object 精确指向已批准的 commit；轻量标签或目标不符都停止发布。
+6. reviewer 核对 tag、commit、版本和 artifact 摘要后批准。流水线创建不可变
    GitHub Release，并上传产品 ZIP、`release.json` 与 `SHA256SUMS`；Marketplace
    candidate 不作为 Release 附件。
-6. publish job 进入 `source-release` 待审批状态后，先删除或清空
-   `JIANWEI_RELEASE_TAG`，再批准环境。无论成功或失败，都确认变量未保留授权值。
+7. publish job 进入 `source-release` 待审批状态后，先删除
+   `JIANWEI_RELEASE_TAG` 并以 GET 404 证明其不存在；若只能降级，值必须精确为
+   字面量 `false`。紧邻审批前再次读取确认该状态。无论成功或失败，都不得保留
+   任何 tag 授权值。
 
 环境审批之前可以拒绝或取消发布。标签一旦创建仍不得复用、移动或删除；若标签
 后的流水线失败，修复后发布下一个版本号。

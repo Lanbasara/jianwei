@@ -213,8 +213,9 @@ def run_release_artifact(env: dict[str, str]) -> None:
              if item.startswith("qa/jianwei/") and PurePosixPath(item).suffix == ".py"]
     builders = [item for item in files
                 if item.startswith("scripts/") and PurePosixPath(item).suffix == ".py"]
-    if len(tests) != 1 or len(builders) != 1:
-        raise RunError("release-artifact requires one QA test and one builder")
+    verifiers = [item for item in files if item.endswith("/verify_artifact.py")]
+    if len(tests) != 1 or len(builders) != 1 or len(verifiers) != 1:
+        raise RunError("release-artifact requires one QA test, one builder, and one verifier")
     run_command([sys.executable, "-m", "unittest", "-v", python_module(tests[0])], env)
 
 

@@ -335,6 +335,16 @@ class PolicyValidationTests(unittest.TestCase):
     def test_release_runner_is_derived_from_its_capability_manifest(self):
         manifest = policy_check.RUNNER_CAPABILITIES["release-artifact"]["files"]
         test_file = next(path for path in manifest if path.startswith("qa/jianwei/"))
+        self.assertEqual(
+            [path for path in manifest if path.endswith("/verify_artifact.py")],
+            [".agents/skills/jianwei-release/scripts/verify_artifact.py"],
+        )
+        test_source = (ROOT / test_file).read_text(encoding="utf-8")
+        self.assertIn('RUNNER_CAPABILITIES["release-artifact"]', test_source)
+        self.assertNotIn(
+            'ROOT / ".agents/skills/jianwei-release/scripts/verify_artifact.py"',
+            test_source,
+        )
         with patch.object(qa_run, "run_command") as command:
             qa_run.run_release_artifact({})
         argv, passed_env = command.call_args.args

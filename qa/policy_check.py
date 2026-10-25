@@ -70,6 +70,7 @@ RUNNER_CAPABILITIES = {
         "files": (
             "qa/jianwei/test_release.py",
             "scripts/build_jianwei_release.py",
+            ".agents/skills/jianwei-release/scripts/verify_artifact.py",
         ),
     },
     "evidence-local": {
