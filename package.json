@@ -1,0 +1,30 @@
+{
+  "name": "jianwei",
+  "version": "0.1.0",
+  "description": "见微：探源数据能力与专业投资研究 skills，使用宿主原生多 agent。",
+  "type": "module",
+  "main": "./host/dsh.mjs",
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Lanbasara/jianwei.git"
+  },
+  "files": [
+    "host",
+    "skills",
+    "scripts",
+    "cordis.patch.yml",
+    "plugin.json",
+    ".claude-plugin",
+    ".codex-plugin",
+    ".env.example",
+    "README.md",
+    "INSTALL.md",
+    "manifest.json"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}

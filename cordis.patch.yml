@@ -1,0 +1,3 @@
+- insert:
+    - id: jianwei-skills
+      name: ./host/dsh.mjs

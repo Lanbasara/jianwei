@@ -1,0 +1,10 @@
+{
+  "name": "jianwei",
+  "version": "0.1.0",
+  "description": "见微：探源数据能力与专业投资研究 skills，使用宿主原生多 agent。",
+  "author": {
+    "name": "Lanbasara"
+  },
+  "repository": "https://github.com/Lanbasara/jianwei",
+  "skills": "./skills/"
+}
