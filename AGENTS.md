@@ -10,6 +10,10 @@ host integration.
   Jianwei consumes it only through `scripts/build_tanyuan.py` and
   `scripts/build_jianwei.py`.
 - `qa/jianwei/` contains offline distribution and host-contract checks.
+- `qa/tanyuan/` contains offline Tanyuan regression checks and frozen historical
+  evaluation tools. Third-party raw golden evidence is local-only, may have
+  redistribution restrictions, and is loaded only from an explicit absolute
+  `JIANWEI_QA_HOME`; it never belongs in Git or a plugin build.
 - `plugin/` is generated, reviewed, and tracked. Never edit it by hand or
   overwrite it in place; build to a new temporary directory, validate it, and
   replace the tree only after validation succeeds.
@@ -32,3 +36,5 @@ AI-dependent quality evaluation is advisory and local-only. It must be
 explicitly classified and must never become a pull-request, release, install,
 or upgrade gate. Deterministic offline checks may be mandatory. Live network
 checks and credentialed data-source checks require separate opt-in execution.
+Do not rewrite `qa/tanyuan/frozen.json` or its locked files as a side effect of
+ordinary source changes; changes to frozen evidence require an explicit review.

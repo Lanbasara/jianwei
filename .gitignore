@@ -19,6 +19,8 @@ htmlcov/
 node_modules/
 dist/
 reports/
+# Third-party raw QA evidence stays local and may have redistribution limits.
+/artifacts/golden/
 .tanyuan/
 **/.cache/
 

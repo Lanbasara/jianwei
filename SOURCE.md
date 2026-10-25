@@ -6,6 +6,8 @@
 - `tanyuan/` 是独立维护的同仓兄弟组件；Jianwei 只通过
   `scripts/build_tanyuan.py` 和 `scripts/build_jianwei.py` 装配它，不把其实现塞进宿主 adapter。
 - `qa/jianwei/` 是不随插件交付的确定性离线检查。
+- `qa/tanyuan/` 是不随插件交付的 Tanyuan 确定性离线回归、冻结清单和历史题库判分工具。
+- 第三方 raw golden 证据不进入本仓。需要回溯验证时，显式设置 `JIANWEI_QA_HOME` 指向本机 golden 根目录；这些材料可能受再分发限制，也不得进入插件发布树。
 - `plugin/` 是从上述源码生成、经过验证且受 Git 追踪的新版发布树。不要直接编辑，也不要原地覆盖；应构建到全新的临时目录，验证后再替换。
 - 仓根现有的 release-shaped 文件精确保留 v0.1.1 发布布局，用于旧 tag 和既有安装兼容。它们不是后续开发源，也不应随新版 `plugin/` 一起改写。
 
