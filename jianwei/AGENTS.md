@@ -9,12 +9,9 @@ When changing Jianwei packaging, runtime, skills, or host integration, read
   metadata and host catalogs from them and assembled skill frontmatter.
 - Assemble Tanyuan from the sibling `tanyuan/` source through
   `scripts/build_tanyuan.py`; keep its implementation out of host adapters.
-- Edit source files, then build into a new temporary output directory. The
-  repository-root `plugin/` tree is the reviewed, tracked release artifact;
-  never edit or overwrite it in place. Validate and compare the fresh output
-  before replacing `plugin/`.
-- Keep the release-shaped files at the repository root unchanged while they
-  provide v0.1.1 compatibility. They are not inputs to future builds.
+- Edit source files, then build into a new output directory. Files under
+  `dist/` are generated release artifacts.
 - Keep every host on the same assembled skill set and shared runtime behavior.
-- Complete packaging changes only after the offline Jianwei tests, a fresh
-  build, the DSH registration check, and a comparison with `plugin/` pass.
+- Complete packaging changes only after the offline Jianwei tests, a clean
+  build, and the DSH registration check pass.
+

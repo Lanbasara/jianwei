@@ -1,22 +1,24 @@
 {
   "identity": {
     "name": "jianwei",
-    "description": "见微：探源数据能力与专业投资研究 skills，使用宿主原生多 agent。",
+    "description": "见微：探源数据、专业投资研究与 HTML 研报 skills，使用宿主原生多 agent。",
     "author": {
       "name": "Lanbasara"
     },
     "repository": "https://github.com/Lanbasara/jianwei"
   },
   "skills": [
-    "setup",
     "tanyuan",
-    "research"
+    "research",
+    "report",
+    "research-then-report"
   ],
   "common_files": {
     "README.md": "README.md",
     "INSTALL.md": "INSTALL.md",
-    "skills/setup/SKILL.md": "skills/setup/SKILL.md",
-    "skills/research/SKILL.md": "skills/research/SKILL.md"
+    "skills/research/SKILL.md": "skills/research/SKILL.md",
+    "skills/report/SKILL.md": "skills/report/SKILL.md",
+    "skills/research-then-report/SKILL.md": "skills/research-then-report/SKILL.md"
   },
   "runtime_files": {
     "runtime/runtime.py": "scripts/runtime.py",
@@ -47,3 +49,4 @@
     }
   }
 }
+

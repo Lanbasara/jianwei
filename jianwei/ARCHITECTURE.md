@@ -50,32 +50,26 @@ package.json
 cordis.patch.yml
 host/{dsh.mjs,catalog.json}
 scripts/{setup.py,runtime.py}
-skills/{setup,tanyuan,research}
+skills/{tanyuan,research,report,research-then-report}
 ```
 
-The repository-root `plugin/` directory contains the reviewed, tracked release
-tree. Build into a new temporary directory rather than editing or overwriting
-`plugin/` in place. Run the offline checks against that fresh output, compare it
-with `plugin/`, and replace the tracked tree only after the fresh output passes.
-The release-shaped files at the repository root temporarily preserve the
-v0.1.1 installation layout and are not assembly inputs.
+`dist/` contains generated artifacts. Build into a new directory rather than
+editing or overwriting an existing release.
 
 ## Invariants
 
 1. Claude Code, Codex, and DSH expose the same assembled skills.
 2. Skill text and shared runtime behavior do not vary by host.
 3. Host adapters contain no `SKILL.md` or data/research implementation.
-4. Release inputs are explicit allowlists; development, QA, report, cache, and
+4. Release inputs are explicit allowlists; development reports, QA, cache, and
    credential files do not enter the bundle.
 5. Generated manifests agree on product identity and version.
 
 Verify these invariants with:
 
 ```bash
-# Point this at Python 3.10+ with the exact versions in tanyuan/requirements.txt.
-export JIANWEI_TEST_PYTHON=/absolute/path/to/prepared/python
-PYTHONDONTWRITEBYTECODE=1 "$JIANWEI_TEST_PYTHON" -m unittest discover -s qa/jianwei -v
+PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -m unittest discover -s qa/jianwei -v
 python3 scripts/build_jianwei.py --out /tmp/jianwei-check
 node qa/jianwei/check_dsh.mjs /tmp/jianwei-check
-diff -qr plugin /tmp/jianwei-check
 ```
+
