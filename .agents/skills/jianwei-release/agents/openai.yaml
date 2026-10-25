@@ -1,0 +1,7 @@
+interface:
+  display_name: "Jianwei Release"
+  short_description: "One-confirmation Jianwei source and Marketplace release"
+  default_prompt: "Use $jianwei-release to preflight and publish the prepared Jianwei version."
+policy:
+  allow_implicit_invocation: true
+

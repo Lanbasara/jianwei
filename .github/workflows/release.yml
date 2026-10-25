@@ -76,7 +76,7 @@ jobs:
     needs:
       - qa
       - build
-    if: ${{ github.event_name == 'push' && github.ref_type == 'tag' && vars.JIANWEI_RELEASE_ENABLED == 'true' }}
+    if: ${{ github.event_name == 'push' && github.ref_type == 'tag' && vars.JIANWEI_RELEASE_TAG == github.ref_name }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment: source-release

@@ -53,6 +53,11 @@ stable version tag contained in `origin/main` may reach the protected
 this repository never writes, opens a pull request against, or merges the
 Marketplace repository automatically.
 
+The prohibition above applies to repository CI and release workflows. The internal
+maintainer Skill `.agents/skills/jianwei-release/` may update the Marketplace only after
+an exact user-confirmed release card; it must still use a separate protected Marketplace
+PR and may not grant that capability to the source release workflow.
+
 AI-dependent quality evaluation is advisory and local-only. It must be
 explicitly classified and must never become a pull-request, release, install,
 or upgrade gate. Deterministic offline checks may be mandatory. Live network

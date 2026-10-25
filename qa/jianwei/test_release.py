@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import datetime as dt
 import hashlib
+import importlib.util
 import json
 import os
 import subprocess
@@ -18,6 +19,13 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 import build_jianwei_marketplace as marketplace  # noqa: E402
 import build_jianwei_release as release  # noqa: E402
+
+_verifier_path = ROOT / ".agents/skills/jianwei-release/scripts/verify_artifact.py"
+_verifier_spec = importlib.util.spec_from_file_location("release_artifact_verifier", _verifier_path)
+if _verifier_spec is None or _verifier_spec.loader is None:
+    raise RuntimeError("unable to load internal release artifact verifier")
+verifier = importlib.util.module_from_spec(_verifier_spec)
+_verifier_spec.loader.exec_module(verifier)
 
 
 def git(repo: Path, *args: str, env: dict[str, str] | None = None) -> str:
@@ -89,6 +97,9 @@ class ReleaseContract(unittest.TestCase):
         skill.write_text("# committed fixture\n", encoding="utf-8")
         skill.chmod(0o755)
         manifest(plugin, "0.2.0")
+        maintainer_skill = self.repo / ".agents/skills/jianwei-release/SKILL.md"
+        maintainer_skill.parent.mkdir(parents=True)
+        maintainer_skill.write_text("internal maintainer workflow\n", encoding="utf-8")
         self.commit = commit(self.repo, "plugin", "2026-01-02T03:04:05+00:00")
         git(self.repo, "tag", "v0.2.0")
         git(self.repo, "update-ref", "refs/remotes/origin/main", self.commit)
@@ -141,6 +152,10 @@ class ReleaseContract(unittest.TestCase):
         for name in (*release.OUTPUT_FILES, "SHA256SUMS"):
             self.assertEqual((first / name).read_bytes(), (second / name).read_bytes(), name)
         self.assertNotIn(b"UNTRACKED_SECRET", (second / "jianwei-plugin.zip").read_bytes())
+        for archive_name in ("jianwei-plugin.zip", "jianwei-marketplace-candidate.zip"):
+            self.assertNotIn(
+                b"internal maintainer workflow", (second / archive_name).read_bytes(),
+            )
 
     def test_product_archive_is_exact_committed_plugin_tree_with_modes(self) -> None:
         out = self.build("archive")
@@ -169,6 +184,15 @@ class ReleaseContract(unittest.TestCase):
         for name in release.OUTPUT_FILES:
             self.assertIn(hashlib.sha256((out / name).read_bytes()).hexdigest(),
                           (out / "SHA256SUMS").read_text(encoding="ascii"))
+        verified = verifier.verify(
+            out,
+            expected_version="0.2.0",
+            expected_commit=self.commit,
+            expected_marketplace_base=self.market_commit,
+            official=False,
+        )
+        self.assertEqual(verified["productFiles"], 4)
+        self.assertEqual(set(verified["candidateFiles"]), verifier.CANDIDATE_FILES)
 
     def test_official_tag_requires_main_ancestry_and_expected_commit(self) -> None:
         with self.assertRaises(release.ReleaseError):
@@ -178,6 +202,14 @@ class ReleaseContract(unittest.TestCase):
             required_ancestor="origin/main",
         )
         self.assertTrue(json.loads((out / "release.json").read_text())["official"])
+        verifier.verify(
+            out,
+            expected_version="0.2.0",
+            expected_commit=self.commit,
+            expected_marketplace_base=self.market_commit,
+            official=True,
+            expected_tag="v0.2.0",
+        )
         with self.assertRaises(release.ReleaseError):
             self.build(
                 "wrong-expected", "v0.2.0", expected_commit="f" * 40,

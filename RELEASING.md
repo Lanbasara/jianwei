@@ -12,8 +12,8 @@ Jianwei 发布物；Marketplace 仓只负责分发索引。两者不得由同一
 - GitHub Release 和附件启用不可变保护。发布错误通过新版本修复，不覆盖旧版本。
 - `source-release` 环境是生产发布授权点：必须由指定 reviewer 明确批准，管理员
   不得绕过。
-- `JIANWEI_RELEASE_ENABLED` 是临时发布开关。平时必须不存在或为 `false`；只有
-  发布操作窗口可以设为 `true`。
+- `JIANWEI_RELEASE_TAG` 是一次性精确发布授权。平时必须不存在或为空；发布窗口只
+  能设为本次 `vX.Y.Z`，不能授权其他标签。
 - AI 评测、联网验收和本地研究质量证据可以影响人工发布决定，但永远不成为 PR、
   发布、安装或升级的自动门禁。
 
@@ -45,7 +45,7 @@ Jianwei 发布物；Marketplace 仓只负责分发索引。两者不得由同一
 仅在候选验收完成后执行：
 
 1. 记录待发布的 `main` commit，并确认工作流候选正是该提交。
-2. 将仓库变量 `JIANWEI_RELEASE_ENABLED` 临时设为 `true`。
+2. 将仓库变量 `JIANWEI_RELEASE_TAG` 临时设为本次精确 tag，例如 `v0.2.0`。
 3. 由发布负责人在该提交创建并推送 annotated tag：
 
    ```bash
@@ -58,7 +58,8 @@ Jianwei 发布物；Marketplace 仓只负责分发索引。两者不得由同一
 5. reviewer 核对 tag、commit、版本和 artifact 摘要后批准。流水线创建不可变
    GitHub Release，并上传产品 ZIP、`release.json` 与 `SHA256SUMS`；Marketplace
    candidate 不作为 Release 附件。
-6. 无论成功或失败，立即把 `JIANWEI_RELEASE_ENABLED` 设回 `false`。
+6. publish job 进入 `source-release` 待审批状态后，先删除或清空
+   `JIANWEI_RELEASE_TAG`，再批准环境。无论成功或失败，都确认变量未保留授权值。
 
 环境审批之前可以拒绝或取消发布。标签一旦创建仍不得复用、移动或删除；若标签
 后的流水线失败，修复后发布下一个版本号。
@@ -83,3 +84,15 @@ Marketplace 验证失败，GitHub Release 保持不变；修复分发元数据�
 每次发布至少保留：版本、`main` commit、tag、Source Release run、产品 ZIP SHA-256、
 Marketplace candidate SHA-256、`release.json`、自动门禁结论，以及人工执行的本地/
 AI/联网验收结论。不得在记录中保存凭据或原始第三方受限证据。
+
+## Agent 单门禁模式
+
+仓内维护 Skill `.agents/skills/jianwei-release/` 可以代发布负责人执行上述 GitHub
+操作。它先完成只读预检并展示包含 PR、完整 commit、版本、tag、Marketplace base 和
+全部远程变更的发布卡；负责人只确认这张卡一次。该确认可授权 Agent 随后合并源码
+PR、创建 tag、代为批准本次 `source-release` deployment，以及创建并合并 Marketplace
+PR。任一身份或保护状态变化都会使确认失效，必须停止并重新预检。
+
+单门禁减少的是重复人工点击，不减少技术门禁：必需 CI、候选构建、环境保护、不可变
+Release、Marketplace validator 和分仓 PR 都必须实际通过。维护 Skill 与其记录不得
+进入 `plugin/`、产品 ZIP 或 Marketplace candidate。

@@ -161,7 +161,7 @@ def validate_release_workflow(workflow: dict[str, object], text: str) -> None:
     assert publish["needs"] == ["qa", "build"]
     assert publish["if"] == (
         "${{ github.event_name == 'push' && github.ref_type == 'tag' && "
-        "vars.JIANWEI_RELEASE_ENABLED == 'true' }}"
+        "vars.JIANWEI_RELEASE_TAG == github.ref_name }}"
     )
     qa_steps = qa["steps"]
     build_steps = build["steps"]
