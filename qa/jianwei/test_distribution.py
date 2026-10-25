@@ -41,7 +41,7 @@ class Distribution(unittest.TestCase):
                                "--python", sys.executable, *args], cwd=self.work,
                               env=self.env, capture_output=True, text=True)
 
-    def test_component_and_research_are_unchanged(self):
+    def test_component_and_jianwei_skills_are_unchanged(self):
         manifest = json.loads((self.bundle / "manifest.json").read_text())
         for relative, digest in manifest["files"].items():
             self.assertEqual(hashlib.sha256((self.bundle / relative).read_bytes()).hexdigest(), digest)
@@ -50,8 +50,9 @@ class Distribution(unittest.TestCase):
             if relative == "skills/tanyuan/bin/ty":
                 path = path.with_name("ty-upstream")
             self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(), digest)
-        self.assertEqual((self.bundle / "skills/research/SKILL.md").read_bytes(),
-                         (ROOT / "jianwei/skills/research/SKILL.md").read_bytes())
+        for name in ("setup", "research"):
+            self.assertEqual((self.bundle / f"skills/{name}/SKILL.md").read_bytes(),
+                             (ROOT / f"jianwei/skills/{name}/SKILL.md").read_bytes())
 
     def test_source_layers_and_adapter_inventory_are_explicit(self):
         source = ROOT / "jianwei"
@@ -113,6 +114,66 @@ class Distribution(unittest.TestCase):
         self.assertIn(str(self.bundle / "scripts/setup.py"), result.stderr)
         self.assertFalse(self.home.exists())
 
+    def test_default_runtime_is_scoped_to_installed_skill_bundle(self):
+        env = {k: v for k, v in self.env.items() if k != "JIANWEI_HOME"}
+        code = (
+            "import sys; "
+            f"sys.path.insert(0, {str(self.bundle / 'scripts')!r}); "
+            "from runtime import state_home; print(state_home())"
+        )
+        result = subprocess.run([sys.executable, "-c", code], env=env,
+                                capture_output=True, text=True, check=True)
+        self.assertEqual(result.stdout.strip(), str(self.bundle / ".runtime"))
+
+    def test_default_runtime_setup_and_status_are_bundle_local_and_redacted(self):
+        with tempfile.TemporaryDirectory(prefix="default runtime ", dir=self.base) as tmp:
+            root = Path(tmp)
+            bundle = root / "plugin"
+            task = root / "task"
+            shutil.copytree(self.bundle, bundle)
+            task.mkdir()
+            env = {k: v for k, v in self.env.items() if k != "JIANWEI_HOME"}
+            setup = [sys.executable, str(bundle / "scripts/setup.py"),
+                     "--python", sys.executable]
+            result = subprocess.run(setup, cwd=task, env=env, capture_output=True, text=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            runtime = bundle / ".runtime"
+            self.assertTrue(runtime.is_dir())
+            config = runtime / "config.env"
+            self.assertEqual(config.stat().st_mode & 0o777, 0o600)
+            config.write_text("TUSHARE_TOKEN=redaction-fixture\n", encoding="utf-8")
+            result = subprocess.run([sys.executable, str(bundle / "scripts/setup.py"), "--status"],
+                                    cwd=task, env=env, capture_output=True, text=True, check=True)
+            payload = json.loads(result.stdout)
+            self.assertEqual(payload["python"], "ready")
+            self.assertTrue(payload["credentials"]["TUSHARE_TOKEN"])
+            self.assertFalse(payload["credentials"]["TAVILY_API_KEY"])
+            self.assertNotIn("redaction-fixture", result.stdout + result.stderr)
+            self.assertEqual(list(task.iterdir()), [])
+
+    def test_status_matches_env_precedence_and_last_dotenv_value(self):
+        self.assertEqual(self.setup_runtime().returncode, 0)
+        config = self.home / "config.env"
+        config.write_text(
+            "TUSHARE_TOKEN=first-fixture\n"
+            "TUSHARE_TOKEN=\n"
+            "TAVILY_API_KEY=file-fixture\n"
+            "DEEPSEEK_API_KEY=\n"
+            "DEEPSEEK_API_KEY=last-fixture\n"
+            "SEC_CONTACT=contact-fixture\n", encoding="utf-8")
+        env = dict(self.env, TAVILY_API_KEY="")
+        result = subprocess.run([sys.executable, str(self.bundle / "scripts/setup.py"), "--status"],
+                                cwd=self.work, env=env, capture_output=True, text=True, check=True)
+        payload = json.loads(result.stdout)
+        self.assertEqual(payload["credentials"], {
+            "TUSHARE_TOKEN": False,
+            "TAVILY_API_KEY": False,
+            "DEEPSEEK_API_KEY": True,
+            "SEC_CONTACT": True,
+        })
+        for secret in ("first-fixture", "file-fixture", "last-fixture", "contact-fixture"):
+            self.assertNotIn(secret, result.stdout + result.stderr)
+
     def test_runtime_reuse_across_directories_and_config_preservation(self):
         result = self.setup_runtime()
         self.assertEqual(result.returncode, 0, result.stderr)
@@ -161,6 +222,19 @@ class Distribution(unittest.TestCase):
                                 cwd=self.work, env=env, capture_output=True, text=True, check=True)
         self.assertEqual(json.loads(result.stdout), {"selected": True, "cache": str(cache), "cwd": str(self.work)})
 
+    def test_launcher_defaults_cache_to_selected_runtime(self):
+        self.assertEqual(self.setup_runtime().returncode, 0)
+        probe = self.work / "cache probe bundle"
+        shutil.copytree(self.bundle, probe)
+        (probe / "skills/tanyuan/bin/ty-upstream").write_text(
+            "import json,sys\nfrom pathlib import Path\n"
+            "sys.path.insert(0,str(Path(__file__).resolve().parents[1]))\n"
+            "from tanyuan.config import CACHE_DIR\n"
+            "print(json.dumps({'cache':str(CACHE_DIR)}))\n", encoding="utf-8")
+        result = subprocess.run([sys.executable, str(probe / "skills/tanyuan/bin/ty")],
+                                cwd=self.work, env=self.env, capture_output=True, text=True, check=True)
+        self.assertEqual(json.loads(result.stdout), {"cache": str(self.home / "cache")})
+
     def test_linked_home_is_rejected(self):
         target = self.work / "unrelated"
         target.mkdir()
@@ -168,6 +242,33 @@ class Distribution(unittest.TestCase):
         result = self.setup_runtime()
         self.assertNotEqual(result.returncode, 0)
         self.assertEqual(list(target.iterdir()), [])
+
+    def test_home_with_linked_parent_is_rejected(self):
+        target = self.work / "unrelated parent"
+        target.mkdir()
+        linked = self.work / "linked parent"
+        linked.symlink_to(target, target_is_directory=True)
+        env = dict(self.env, JIANWEI_HOME=str(linked / "child"))
+        result = subprocess.run([sys.executable, str(self.bundle / "scripts/setup.py"),
+                                 "--python", sys.executable], cwd=self.work,
+                                env=env, capture_output=True, text=True)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("不能包含符号链接", result.stderr)
+        self.assertEqual(list(target.iterdir()), [])
+
+    def test_status_rejects_linked_internal_pointer_directory(self):
+        self.home.mkdir()
+        outside = self.work / "outside pointers"
+        outside.mkdir()
+        dependency = hashlib.sha256(
+            (self.bundle / "skills/tanyuan/requirements.txt").read_bytes()
+        ).hexdigest()[:16]
+        (outside / f"{dependency}.python").write_text(str(sys.executable) + "\n", encoding="utf-8")
+        (self.home / "runtimes").symlink_to(outside, target_is_directory=True)
+        result = subprocess.run([sys.executable, str(self.bundle / "scripts/setup.py"), "--status"],
+                                cwd=self.work, env=self.env, capture_output=True, text=True)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("不能包含符号链接", result.stderr)
 
     def test_missing_config_does_not_fall_back_to_task_credentials(self):
         self.assertEqual(self.setup_runtime().returncode, 0)

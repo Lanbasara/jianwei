@@ -50,7 +50,7 @@ package.json
 cordis.patch.yml
 host/{dsh.mjs,catalog.json}
 scripts/{setup.py,runtime.py}
-skills/{tanyuan,research}
+skills/{setup,tanyuan,research}
 ```
 
 The repository-root `plugin/` directory contains the reviewed, tracked release

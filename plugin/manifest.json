@@ -5,16 +5,17 @@
     ".claude-plugin/plugin.json": "e2a614e12b9eba47177d0738484e03252eebcd5b449a5e4495cd757ddab34d36",
     ".codex-plugin/plugin.json": "cdd85b1125c73b7111a9a81891c8bdc573b161430b162c4e502f45833f3749ca",
     ".env.example": "6200af1881e3c8bce527b74b05819acc5011492ec0ff3c62f7dc7f1622bd61a9",
-    "INSTALL.md": "805903bb9ce29019c57be1715e0f209c8ce6a56293aec83967fcc7625da9a947",
-    "README.md": "f20042e42352e3791b78c8cb874af8d6c1a6e3fcd8e24ba49a2a566ae4ee03e7",
+    "INSTALL.md": "6b13740d65bc92e370ce0765e6fd496a5654672636809e8428c377863209a685",
+    "README.md": "1cf5786b466b93797af0b86f304463dadd4dd65a34ed8f79a6071b7bed943948",
     "cordis.patch.yml": "f2be4eb42c32ccf35bbe6346c20ece698e14aef966804f36e3a13c5a2e689147",
-    "host/catalog.json": "b05f5b6aac6d2509bf29e9dd0b3c584a1788a64919e801bcb990ce12ebdbd78b",
+    "host/catalog.json": "300c31d66b124c0b2d3c9df27c6e4d33816792664af3c79a86a281e719257b81",
     "host/dsh.mjs": "83df1812230f47efad9347ff8ca9242a227d95d5647119532a0871b7cfc4fba7",
     "package.json": "07c0c9dd9665450ddda872f71323a3cadb0d0bb9508d33a4c95c8d77c54940b0",
     "plugin.json": "633ebfa8cdf1ac92d76665da01a0fb768931185b2cdb5db0c09b8b81b4a1dbdd",
-    "scripts/runtime.py": "1a8e9e22d2f275146607bdced028e532e8de4de0ef0fbbe691bb8b851cd6d5ad",
-    "scripts/setup.py": "8763dcf2e99675b6bb17cbcd792976834c378b946f0f77dcb9f5bcb488b5c0e4",
+    "scripts/runtime.py": "d7749e5e3ef7deecb1ceed5a723832dd524a6b604e384584ad7046e72ce5e44a",
+    "scripts/setup.py": "eb23c4d9473b245813cf32d3b6b21a7f15c618d4e812f5ef3e8b6c1996fb7b4a",
     "skills/research/SKILL.md": "3017e5f19ca1f74b62bfd9f3d14a71dfe5f8d3e04d4a37d654a205d490095392",
+    "skills/setup/SKILL.md": "85fa6835321b38cbe6bd41de30c940eaa6e83d3d1b2668b94777eecbfab5963d",
     "skills/tanyuan/SKILL.md": "9ce1a9618e56c7c4dc52249d366f2514be2d6e20e6baad3e76d94177ea3b7157",
     "skills/tanyuan/bin/ty": "9c132660825b3308208a289f92c851d6e4f0ebcc7cd1410635320b280490de9c",
     "skills/tanyuan/bin/ty-upstream": "d251020e678983090e229fcc9a9d731d6b06098992532022103c84ea2d4be214",
@@ -124,6 +125,9 @@
         "skills/tanyuan/tanyuan/tushare.py": "d885bb08a0e77033ac4850895e76387cc625fa27989c7c0fb5ccf1539ffe56db",
         "skills/tanyuan/tanyuan/util.py": "2f833ff4e5522d81d6890c9168cb0d904b929b089e23e75e57e341be491ec69e"
       }
+    },
+    "setup": {
+      "sha256": "85fa6835321b38cbe6bd41de30c940eaa6e83d3d1b2668b94777eecbfab5963d"
     },
     "research": {
       "sha256": "3017e5f19ca1f74b62bfd9f3d14a71dfe5f8d3e04d4a37d654a205d490095392"
