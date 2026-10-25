@@ -244,7 +244,7 @@ def validate_release_workflow(workflow: dict[str, object], text: str) -> None:
         },
         {
             "name": "Publish GitHub Release",
-            "run": "gh release create \"$GITHUB_REF_NAME\" dist/release/jianwei-plugin.zip dist/release/release.json dist/release/SHA256SUMS --verify-tag --generate-notes --title \"$GITHUB_REF_NAME\"",
+            "run": "gh release create --repo \"$GITHUB_REPOSITORY\" \"$GITHUB_REF_NAME\" dist/release/jianwei-plugin.zip dist/release/release.json dist/release/SHA256SUMS --verify-tag --generate-notes --title \"$GITHUB_REF_NAME\"",
             "env": {"GH_TOKEN": "${{ github.token }}"},
         },
     ]
@@ -262,6 +262,7 @@ def validate_release_workflow(workflow: dict[str, object], text: str) -> None:
     release_step = publish_steps[-1]
     assert "jianwei-marketplace-candidate.zip" not in release_step["run"]
     assert "--clobber" not in release_step["run"]
+    assert '--repo "$GITHUB_REPOSITORY"' in release_step["run"]
     assert "gh release edit" not in release_step["run"]
     assert "gh release upload" not in release_step["run"]
     assert not any("pip" in step.get("run", "") for step in build_steps)
