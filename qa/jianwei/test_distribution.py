@@ -50,7 +50,7 @@ class Distribution(unittest.TestCase):
             if relative == "skills/tanyuan/bin/ty":
                 path = path.with_name("ty-upstream")
             self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(), digest)
-        for name in ("setup", "research"):
+        for name in ("setup", "research", "report", "research-then-report"):
             self.assertEqual((self.bundle / f"skills/{name}/SKILL.md").read_bytes(),
                              (ROOT / f"jianwei/skills/{name}/SKILL.md").read_bytes())
 
@@ -69,6 +69,15 @@ class Distribution(unittest.TestCase):
         self.assertEqual(set(distribution["runtime_files"]), {
             "runtime/runtime.py", "runtime/setup.py", "runtime/ty-launcher"
         })
+
+    def test_research_then_report_references_skills_in_order(self):
+        workflow = ROOT / "jianwei/skills/research-then-report/SKILL.md"
+        content = workflow.read_text(encoding="utf-8")
+        research_link = "[research](../research/SKILL.md)"
+        report_link = "[report](../report/SKILL.md)"
+        self.assertLess(content.index(research_link), content.index(report_link))
+        for relative in ("../research/SKILL.md", "../report/SKILL.md"):
+            self.assertTrue((workflow.parent / relative).resolve().is_file())
 
     def test_distribution_paths_reject_escape_and_links(self):
         with self.assertRaises(ValueError):
@@ -106,7 +115,8 @@ class Distribution(unittest.TestCase):
             self.assertFalse(forbidden.intersection(path.relative_to(self.bundle).parts), path)
             if path.is_file():
                 self.assertNotIn(str(ROOT).encode(), path.read_bytes(), path)
-        self.assertFalse((self.bundle / "skills/report").exists())
+        self.assertTrue((self.bundle / "skills/report/SKILL.md").is_file())
+        self.assertTrue((self.bundle / "skills/research-then-report/SKILL.md").is_file())
 
     def test_unconfigured_launcher_gives_exact_setup_path_without_writing(self):
         result = self.run_cli(["--version"])
