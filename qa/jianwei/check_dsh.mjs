@@ -8,7 +8,13 @@ const plugin = await import(pathToFileURL(resolve(root, 'host/dsh.mjs')).href);
 assert.deepEqual(plugin.inject, ['skills']);
 const definitions = [];
 plugin.apply({ skills: { register: definition => definitions.push(definition) } });
-assert.deepEqual(definitions.map(d => d.name), ['jianwei-setup', 'jianwei-tanyuan', 'jianwei-research']);
+assert.deepEqual(definitions.map(d => d.name), [
+  'jianwei-setup',
+  'jianwei-tanyuan',
+  'jianwei-research',
+  'jianwei-report',
+  'jianwei-research-then-report',
+]);
 for (const definition of definitions) {
   const source = readFileSync(definition.path, 'utf8');
   assert.equal(definition.content, source.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, '').trim());

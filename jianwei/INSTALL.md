@@ -1,6 +1,6 @@
 # Jianwei 0.2.0 安装与自行验收
 
-当前含 tanyuan + research，暂不含 report。不需要另装 tanyuan，也不需要克隆 huoguang。
+当前含 setup、tanyuan、research、report 与 research-then-report。不需要另装 tanyuan，也不需要克隆 huoguang。
 
 ## Claude Code
 
@@ -12,7 +12,7 @@ claude plugin install jianwei@jianwei --scope user
 claude plugin list
 ```
 
-在任意任务目录启动新会话。技能为 `/jianwei:tanyuan`、`/jianwei:research`。已有会话按宿主提示重新加载或新开会话。用户级安装在本机各项目可用，项目设置仍可覆盖是否启用。
+在任意任务目录启动新会话。技能为 `/jianwei:setup`、`/jianwei:tanyuan`、`/jianwei:research`、`/jianwei:report`、`/jianwei:research-then-report`。已有会话按宿主提示重新加载或新开会话。用户级安装在本机各项目可用，项目设置仍可覆盖是否启用。
 
 ## Codex
 
@@ -26,7 +26,7 @@ codex plugin list
 
 桌面端也可在插件页面添加 GitHub marketplace `Lanbasara/jianwei-marketplace`，从该来源安装 Jianwei。命令行安装后，桌面端若未更新列表，请刷新或重启，再建立新会话。
 
-在任意工作区说：“使用 Jianwei 插件的 tanyuan，先检查 ty 版本，再研究……”，或在技能选择器中选 Jianwei 下的 research。显式调用符号以实际客户端列表为准。
+在任意工作区说：“使用 Jianwei 插件研究……并生成 HTML 研报”，agent 会使用 research-then-report，在同一主对话中先完整执行 research，再执行 report。也可以在技能选择器中选择 Jianwei 下的相应 skill；显式调用符号以实际客户端列表为准。
 
 CLI 语法针对本机 **0.163.0-alpha.11.2** 的帮助核对。若旧版没有 `codex plugin add`，升级客户端或使用提供插件功能的桌面版本。
 
@@ -51,7 +51,7 @@ dsh web
 
 若 shell 没有 `dsh` 但装了 Desktop，使用应用内插件管理。不要重置已有 profile；CLI 与 Desktop 的 profile 不是可以随意互换的名称。
 
-技能名是 **`jianwei-setup`**、**`jianwei-tanyuan`**、**`jianwei-research`**，可从技能入口选择或直接要求 agent 使用。包只注册技能，不更换模型、agent preset、多 agent 工具或权限。接口以 DSH **0.2.1-rc.3** 核查；其他 profile 需分别安装。
+技能名是 **`jianwei-setup`**、**`jianwei-tanyuan`**、**`jianwei-research`**、**`jianwei-report`**、**`jianwei-research-then-report`**，可从技能入口选择或直接要求 agent 使用。包只注册技能，不更换模型、agent preset、多 agent 工具或权限。接口以 DSH **0.2.1-rc.3** 核查；其他 profile 需分别安装。
 
 Git 包包含准备好的 ESM 注册文件，没有 prepare/postinstall 或 npm 构建步骤。Python 依赖在下面的显式初始化中准备。
 
@@ -84,16 +84,19 @@ python3 "/absolute/path/to/installed/jianwei/scripts/setup.py" \
 
 选择开发仓之外的空目录，再选择另一个已有工作目录，各开一次新任务。
 
-1. **发现与运行**：三项技能可见；setup 能解释当前状态，`ty --version` 返回 tanyuan 版本，`ty tools` 能列出能力；第二个任务目录不再安装依赖。
+1. **发现与运行**：五项技能可见；setup 能解释当前状态，`ty --version` 返回 tanyuan 版本，`ty tools` 能列出能力；第二个任务目录不再安装依赖。
 2. **取数**：用已配置服务完成熟悉的小查询，检查标的、时间、单位和来源；缺权限或服务失败应明确报告。
 3. **研究与协作**：给出值得分工的问题，要求宿主原生子 agent 调查，另一个未承担原论证的 agent 复核关键结论。检查实际执行记录及有出处的自然语言底稿，不只看最终文字宣称“已复核”。
-4. **产物位置**：底稿与附件留在任务目录；Python 环境、默认凭据模板和缓存只在当前插件副本的 `.runtime/`，任务目录没有 `.tanyuan` 缓存。
+4. **研报衔接**：要求研究并生成 HTML 研报，确认 agent 选择 research-then-report，并在同一主对话先完整执行 research、再执行 report；生成的 HTML 可以独立打开。
+5. **产物位置**：底稿、研报与附件留在任务目录；Python 环境、默认凭据模板和缓存只在当前插件副本的 `.runtime/`，任务目录没有 `.tanyuan` 缓存。
 
 示例：
 
 > 使用 Jianwei 的 research，研究我指定公司的最近一期经营变化及其投资含义。核对披露时点，按问题安排独立调查，对关键数字和主要推断独立复核。用自然语言 Markdown 给出结论、证据、反证与缺口，保存在当前目录。
 
 research 可使用 tanyuan，也可自行 Web 搜索。如果宿主禁用了子 agent，应明确披露独立复核的缺口。
+
+research-then-report 用于从投资问题到最终 HTML 研报的完整流程。report 只承接已经完成的 research；在没有研究上下文的新会话中单独使用时，需要明确指定已有研究产物。
 
 ## 升级与卸载
 
