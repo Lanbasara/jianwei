@@ -1,0 +1,7 @@
+{
+  "name": "$NAME",
+  "version": "$VERSION",
+  "description": "$DESCRIPTION",
+  "author": "$AUTHOR",
+  "repository": "$REPOSITORY"
+}

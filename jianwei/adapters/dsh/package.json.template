@@ -1,0 +1,35 @@
+{
+  "name": "$NAME",
+  "version": "$VERSION",
+  "description": "$DESCRIPTION",
+  "type": "module",
+  "main": "./host/dsh.mjs",
+  "license": "UNLICENSED",
+  "author": "$AUTHOR",
+  "homepage": "$REPOSITORY",
+  "engines": {
+    "dsh": ">=0.2.1-rc.3 <0.3.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "$GIT_REPOSITORY"
+  },
+  "files": [
+    "host",
+    "skills",
+    "scripts",
+    "cordis.patch.yml",
+    "plugin.json",
+    ".claude-plugin",
+    ".codex-plugin",
+    ".env.example",
+    "README.md",
+    "INSTALL.md",
+    "manifest.json"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}

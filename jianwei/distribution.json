@@ -1,0 +1,47 @@
+{
+  "identity": {
+    "name": "jianwei",
+    "description": "见微：探源数据能力与专业投资研究 skills，使用宿主原生多 agent。",
+    "author": {
+      "name": "Lanbasara"
+    },
+    "repository": "https://github.com/Lanbasara/jianwei"
+  },
+  "skills": [
+    "tanyuan",
+    "research"
+  ],
+  "common_files": {
+    "README.md": "README.md",
+    "INSTALL.md": "INSTALL.md",
+    "skills/research/SKILL.md": "skills/research/SKILL.md"
+  },
+  "runtime_files": {
+    "runtime/runtime.py": "scripts/runtime.py",
+    "runtime/setup.py": "scripts/setup.py",
+    "runtime/ty-launcher": "skills/tanyuan/bin/ty"
+  },
+  "adapters": {
+    "claude": {
+      "templates": {
+        "adapters/claude/plugin.json.template": ".claude-plugin/plugin.json"
+      },
+      "files": {}
+    },
+    "codex": {
+      "templates": {
+        "adapters/codex/plugin.json.template": ".codex-plugin/plugin.json"
+      },
+      "files": {}
+    },
+    "dsh": {
+      "templates": {
+        "adapters/dsh/package.json.template": "package.json"
+      },
+      "files": {
+        "adapters/dsh/cordis.patch.yml": "cordis.patch.yml",
+        "adapters/dsh/dsh.mjs": "host/dsh.mjs"
+      }
+    }
+  }
+}

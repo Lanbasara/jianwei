@@ -1,0 +1,24 @@
+.DS_Store
+
+# Deny environment files at every depth first, then allow only the documented
+# non-secret template. Keep these rules before all ordinary build/cache rules;
+# do not add a broad `!plugin/**` rule that would re-include plugin secrets.
+.env
+.env.*
+!.env.example
+.venv/
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+node_modules/
+dist/
+reports/
+.tanyuan/
+**/.cache/
+
+# plugin/ is intentionally not ignored: its ordinary generated files remain
+# reviewable and tracked while the environment-file rules above still apply.
