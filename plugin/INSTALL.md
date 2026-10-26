@@ -26,7 +26,7 @@ codex plugin list
 
 桌面端也可在插件页面添加 GitHub marketplace `Lanbasara/jianwei-marketplace`，从该来源安装 Jianwei。命令行安装后，桌面端若未更新列表，请刷新或重启，再建立新会话。
 
-在任意工作区说：“使用 Jianwei 插件研究……并生成 HTML 研报”，agent 会使用 research-then-report，在同一主对话中先完整执行 research，再执行 report。也可以在技能选择器中选择 Jianwei 下的相应 skill；显式调用符号以实际客户端列表为准。
+在任意工作区说：“使用 Jianwei 插件研究……并生成 HTML 研报”，agent 会使用 research-then-report，先完整执行 research，再委派通用子智能体执行 report，并由主智能体交付成稿。也可以在技能选择器中选择 Jianwei 下的相应 skill；显式调用符号以实际客户端列表为准。
 
 CLI 语法针对本机 **0.163.0-alpha.11.2** 的帮助核对。若旧版没有 `codex plugin add`，升级客户端或使用提供插件功能的桌面版本。
 
@@ -87,7 +87,7 @@ python3 "/absolute/path/to/installed/jianwei/scripts/setup.py" \
 1. **发现与运行**：五项技能可见；setup 能解释当前状态，`ty --version` 返回 tanyuan 版本，`ty tools` 能列出能力；第二个任务目录不再安装依赖。
 2. **取数**：用已配置服务完成熟悉的小查询，检查标的、时间、单位和来源；缺权限或服务失败应明确报告。
 3. **研究与协作**：给出值得分工的问题，要求宿主原生子 agent 调查，另一个未承担原论证的 agent 复核关键结论。检查实际执行记录及有出处的自然语言底稿，不只看最终文字宣称“已复核”。
-4. **研报衔接**：要求研究并生成 HTML 研报，确认 agent 选择 research-then-report，并在同一主对话先完整执行 research、再执行 report；生成的 HTML 可以独立打开。
+4. **研报衔接**：要求研究并生成 HTML 研报，确认 agent 选择 research-then-report，先完整执行 research，再委派通用子智能体执行 report 并接收成稿；生成的 HTML 可以独立打开。
 5. **产物位置**：底稿、研报与附件留在任务目录；Python 环境、默认凭据模板和缓存只在当前插件副本的 `.runtime/`，任务目录没有 `.tanyuan` 缓存。
 
 示例：
