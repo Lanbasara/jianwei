@@ -2,7 +2,7 @@
 
 一次安装，获得探源数据能力、专业投资研究与 HTML 研报 skills。支持 Claude Code、Codex、DeepSeek Harness（DSH）。
 
-当前版本 **0.2.1**，包含 **setup**、**tanyuan 0.5.0**、**research**、**report** 与 **research-then-report** 五项 skill。setup 引导准备本地依赖与凭据；tanyuan 提供 ty CLI、数据能力和参考资料；research 负责调查、分析与独立复核；report 将已经完成的研究忠实写成 HTML 研报；research-then-report 在同一主对话中依次调用 research 与 report。研究使用宿主原生多 agent，也可自由使用 Web 等工具。
+当前版本 **0.2.1**，包含 **setup**、**tanyuan 0.5.0**、**research**、**report** 与 **research-then-report** 五项 skill。setup 引导准备本地依赖与凭据；tanyuan 提供 ty CLI、数据能力和参考资料；research 负责调查、分析与独立复核；report 将已经完成的研究忠实写成 HTML 研报；research-then-report 在研究完成后委派通用子智能体执行 report。研究使用宿主原生多 agent，也可自由使用 Web 等工具。
 
 ## 安装
 
@@ -33,7 +33,7 @@ https://raw.githubusercontent.com/Lanbasara/jianwei-marketplace/main/dsh/index.j
 
 marketplace 中的 Jianwei 条目发布 0.2.1 后，再从见微市场安装。索引由我们维护，Git commit 和 `plugin/` 子目录由 DSH 自动选择，无需用户编辑版本地址。0.2.1-rc.3 的第三方插件升级仍需卸载后从市场重装；当前没有发布 npm 包。
 
-DSH 其技能名为 `jianwei-setup`、`jianwei-tanyuan`、`jianwei-research`、`jianwei-report`、`jianwei-research-then-report`，避免占用通用名称。Claude 使用 `/jianwei:setup`、`/jianwei:tanyuan`、`/jianwei:research`、`/jianwei:report`、`/jianwei:research-then-report`。Codex 可自然语言指定 Jianwei 插件的相应 skill，以实际技能列表为准。用户要求从投资问题开始研究并形成最终研报时，agent 使用 research-then-report；它会在同一主对话中先完整执行 research，再执行 report。
+DSH 其技能名为 `jianwei-setup`、`jianwei-tanyuan`、`jianwei-research`、`jianwei-report`、`jianwei-research-then-report`，避免占用通用名称。Claude 使用 `/jianwei:setup`、`/jianwei:tanyuan`、`/jianwei:research`、`/jianwei:report`、`/jianwei:research-then-report`。Codex 可自然语言指定 Jianwei 插件的相应 skill，以实际技能列表为准。用户要求从投资问题开始研究并形成最终研报时，agent 使用 research-then-report；它会先完整执行 research，再委派通用子智能体执行 report，并由主智能体交付成稿。
 
 ## 首次准备与任意目录使用
 

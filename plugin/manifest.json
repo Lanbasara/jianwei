@@ -1,23 +1,23 @@
 {
   "name": "jianwei",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "files": {
-    ".claude-plugin/plugin.json": "fe7bdb44253feb99c668f2c860a7d24f6f65f5942376ff35adfaa724bd6c7467",
-    ".codex-plugin/plugin.json": "ec2b5447e75d751ade2824c5f609c2c610f1aa70e7826ee399ff4e211921e7a7",
+    ".claude-plugin/plugin.json": "fd10619b6c79c2d0e5d2ab3efc643addfed873521977ab38b2f5413776801962",
+    ".codex-plugin/plugin.json": "d130e5a98debe23ad145c71d6e5b9ea6be2e5eaea39b2d1c12f8301c424aaa33",
     ".env.example": "6200af1881e3c8bce527b74b05819acc5011492ec0ff3c62f7dc7f1622bd61a9",
-    "INSTALL.md": "d7ddacbdfa920d5acd39e9354a144517dd602c611438730d50f16bf0cc765096",
-    "README.md": "2a3479273e6e223854ec9c5d5485b1dadcc884d55e9c27f5df596bd3d7d86acd",
+    "INSTALL.md": "8a4c344b473e27e052dec0d3d89fd0997cfe9232152728f90db907de1ae9f767",
+    "README.md": "254e0a9daef92fa422e16ebed206211a08fd4d05e1cfa4605e143fac6f6946b6",
     "WORKSPACE.md": "ca6e63df62c24a4743cf5814a802856273c1faa3c610ca9c4bc7dabf7d3cd197",
     "cordis.patch.yml": "f2be4eb42c32ccf35bbe6346c20ece698e14aef966804f36e3a13c5a2e689147",
     "host/catalog.json": "3c09d8c5bf82ecf888b2597e0a0ee3399a25486f97e1ad3faa005910363daebf",
     "host/dsh.mjs": "83df1812230f47efad9347ff8ca9242a227d95d5647119532a0871b7cfc4fba7",
-    "package.json": "6f71e539629da39b2f71adbac653268712ae9467eb738d2c78a237549eb33453",
-    "plugin.json": "d051292e2d97769a3926d2185186ce5b56bfeedd11205315ee8ccce26b23b85e",
+    "package.json": "23455bc0a3593fb139a20be3df94bbcbd02722ef792d59adc04d12133369a0d7",
+    "plugin.json": "45fcbd35998c1f5c53d6be41875ae055309d1c7b0067942f921ccf0b936a876d",
     "scripts/runtime.py": "d7749e5e3ef7deecb1ceed5a723832dd524a6b604e384584ad7046e72ce5e44a",
     "scripts/setup.py": "eb23c4d9473b245813cf32d3b6b21a7f15c618d4e812f5ef3e8b6c1996fb7b4a",
     "skills/report/SKILL.md": "2bd675efa816876833886b3361ab9c3ecda334bcb350c64b456099e841d19c54",
-    "skills/research/SKILL.md": "fe1293da6ef71ee712d81c0ffff87e2026b7665f2718eccc8f4246b6e62d0e48",
-    "skills/research-then-report/SKILL.md": "c245e5a2865c0fc2f8e3787960cde73eed174579e5933971d813177cba7483a8",
+    "skills/research/SKILL.md": "11e9b93ff95d35c4b4c3f7bbb583cc3cb386d703142ce7eea73d581fe001b1bf",
+    "skills/research-then-report/SKILL.md": "cb42e7d530bf1828126604ba04f2810c40e952885037bc70aaba3c3504e5f21d",
     "skills/setup/SKILL.md": "85fa6835321b38cbe6bd41de30c940eaa6e83d3d1b2668b94777eecbfab5963d",
     "skills/tanyuan/SKILL.md": "9ce1a9618e56c7c4dc52249d366f2514be2d6e20e6baad3e76d94177ea3b7157",
     "skills/tanyuan/bin/ty": "9c132660825b3308208a289f92c851d6e4f0ebcc7cd1410635320b280490de9c",
@@ -133,13 +133,13 @@
       "sha256": "85fa6835321b38cbe6bd41de30c940eaa6e83d3d1b2668b94777eecbfab5963d"
     },
     "research": {
-      "sha256": "fe1293da6ef71ee712d81c0ffff87e2026b7665f2718eccc8f4246b6e62d0e48"
+      "sha256": "11e9b93ff95d35c4b4c3f7bbb583cc3cb386d703142ce7eea73d581fe001b1bf"
     },
     "report": {
       "sha256": "2bd675efa816876833886b3361ab9c3ecda334bcb350c64b456099e841d19c54"
     },
     "research-then-report": {
-      "sha256": "c245e5a2865c0fc2f8e3787960cde73eed174579e5933971d813177cba7483a8"
+      "sha256": "cb42e7d530bf1828126604ba04f2810c40e952885037bc70aaba3c3504e5f21d"
     }
   },
   "entry_adaptation": "skills/tanyuan/bin/ty is the Jianwei launcher; ty-upstream preserves the original entry."
