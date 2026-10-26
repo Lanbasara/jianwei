@@ -1,9 +1,9 @@
 {
   "name": "jianwei",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "files": {
-    ".claude-plugin/plugin.json": "fe7bdb44253feb99c668f2c860a7d24f6f65f5942376ff35adfaa724bd6c7467",
-    ".codex-plugin/plugin.json": "ec2b5447e75d751ade2824c5f609c2c610f1aa70e7826ee399ff4e211921e7a7",
+    ".claude-plugin/plugin.json": "fd10619b6c79c2d0e5d2ab3efc643addfed873521977ab38b2f5413776801962",
+    ".codex-plugin/plugin.json": "d130e5a98debe23ad145c71d6e5b9ea6be2e5eaea39b2d1c12f8301c424aaa33",
     ".env.example": "6200af1881e3c8bce527b74b05819acc5011492ec0ff3c62f7dc7f1622bd61a9",
     "INSTALL.md": "8a4c344b473e27e052dec0d3d89fd0997cfe9232152728f90db907de1ae9f767",
     "README.md": "254e0a9daef92fa422e16ebed206211a08fd4d05e1cfa4605e143fac6f6946b6",
@@ -11,8 +11,8 @@
     "cordis.patch.yml": "f2be4eb42c32ccf35bbe6346c20ece698e14aef966804f36e3a13c5a2e689147",
     "host/catalog.json": "3c09d8c5bf82ecf888b2597e0a0ee3399a25486f97e1ad3faa005910363daebf",
     "host/dsh.mjs": "83df1812230f47efad9347ff8ca9242a227d95d5647119532a0871b7cfc4fba7",
-    "package.json": "6f71e539629da39b2f71adbac653268712ae9467eb738d2c78a237549eb33453",
-    "plugin.json": "d051292e2d97769a3926d2185186ce5b56bfeedd11205315ee8ccce26b23b85e",
+    "package.json": "23455bc0a3593fb139a20be3df94bbcbd02722ef792d59adc04d12133369a0d7",
+    "plugin.json": "45fcbd35998c1f5c53d6be41875ae055309d1c7b0067942f921ccf0b936a876d",
     "scripts/runtime.py": "d7749e5e3ef7deecb1ceed5a723832dd524a6b604e384584ad7046e72ce5e44a",
     "scripts/setup.py": "eb23c4d9473b245813cf32d3b6b21a7f15c618d4e812f5ef3e8b6c1996fb7b4a",
     "skills/report/SKILL.md": "2bd675efa816876833886b3361ab9c3ecda334bcb350c64b456099e841d19c54",
