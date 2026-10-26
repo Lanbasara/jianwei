@@ -1,6 +1,6 @@
 {
   "name": "jianwei",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "见微：探源数据、专业投资研究与 HTML 研报 skills，使用宿主原生多 agent。",
   "type": "module",
   "main": "./host/dsh.mjs",
