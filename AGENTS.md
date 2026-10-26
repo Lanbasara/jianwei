@@ -49,9 +49,10 @@ are implemented only in `qa/run.py`. AI evaluation remains local and
 non-gating; live checks remain manual and require explicit network approval.
 
 Complete source or packaging changes only after running the offline Jianwei
-unit tests, producing a fresh build, checking the DSH registration contract,
-comparing the reviewed generated tree with that fresh build, and passing the
-offline Marketplace contract. Marketplace candidates must be generated from
+unit tests, `python qa/run.py --suite build-contract`, and the offline
+Marketplace contract. The build contract verifies the package-manager output,
+not just the build directory; see `jianwei/ARCHITECTURE.md` for the payload
+invariant. Marketplace candidates must be generated from
 committed `plugin/` metadata through `scripts/build_jianwei_marketplace.py`;
 never edit a catalog candidate by hand or fall back to the compatibility
 package at the repository root. The builder must authenticate the complete

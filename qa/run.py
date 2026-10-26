@@ -9,6 +9,7 @@ import os
 import shutil
 import subprocess
 import sys
+import tarfile
 import tempfile
 from collections.abc import Callable
 from contextlib import contextmanager
@@ -99,8 +100,11 @@ def suite_environment(
     yield inherited
 
 
-def run_command(argv: list[str], env: dict[str, str], timeout: int = TIMEOUT_SECONDS) -> None:
-    subprocess.run(argv, cwd=ROOT, env=env, check=True, shell=False, timeout=timeout)
+def run_command(
+        argv: list[str], env: dict[str, str], timeout: int = TIMEOUT_SECONDS,
+        *, cwd: Path = ROOT,
+) -> None:
+    subprocess.run(argv, cwd=cwd, env=env, check=True, shell=False, timeout=timeout)
 
 
 def capability_files(runner: str) -> tuple[str, ...]:
@@ -185,15 +189,60 @@ def assert_same_tree(expected: Path, actual: Path) -> None:
         raise RunError(f"fresh build differs from tracked plugin: {changed}")
 
 
+def unpack_verified_package(archive: Path, expected: Path, destination: Path) -> None:
+    """Accept only the exact built payload before executing its host entry."""
+    expected_files = _tree_files(expected)
+    seen: set[str] = set()
+    destination.mkdir()
+    with tarfile.open(archive, "r:gz") as package:
+        for member in package:
+            relative = member.name.removeprefix("package/")
+            if (member.name != "package/" + relative or relative not in expected_files
+                    or relative in seen or not member.isfile()):
+                raise RunError(f"unexpected, duplicate or non-regular package entry: {member.name}")
+            source = expected_files[relative]
+            mode = source.stat().st_mode & 0o777
+            if member.size != source.stat().st_size or member.mode != mode:
+                raise RunError(f"package size or mode differs from built payload: {relative}")
+            stream = package.extractfile(member)
+            if stream is None:
+                raise RunError(f"unreadable package entry: {relative}")
+            with stream:
+                content = stream.read(member.size + 1)
+            if content != source.read_bytes():
+                raise RunError(f"package content differs from built payload: {relative}")
+            target = destination / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(content)
+            target.chmod(mode)
+            seen.add(relative)
+    missing = sorted(set(expected_files) - seen)
+    if missing:
+        raise RunError(f"package is missing built payload files: {missing}")
+
+
 def run_build_contract(env: dict[str, str]) -> None:
     build_script = _single_file_with_suffix("build-contract", ".py")
     node_check = _single_file_with_suffix("build-contract", ".mjs")
     with tempfile.TemporaryDirectory(prefix="jianwei-qa-build-") as folder:
         fresh = Path(folder) / "plugin"
         run_command([sys.executable, build_script, "--out", str(fresh)], env)
-        run_command(["node", node_check, str(fresh)], node_child_environment(env))
         assert_same_tree(ROOT / "plugin", fresh)
-    print("PASS: fresh build matches tracked plugin")
+        package_env = node_child_environment(env)
+        package_env.update({
+            "NPM_CONFIG_USERCONFIG": str(Path(folder) / "user.npmrc"),
+            "NPM_CONFIG_GLOBALCONFIG": str(Path(folder) / "global.npmrc"),
+            "NPM_CONFIG_CACHE": str(Path(folder) / "npm-cache"),
+        })
+        run_command(["npm", "pack", "--offline", "--ignore-scripts", "--silent",
+                     "--pack-destination", folder], package_env, cwd=fresh)
+        archives = list(Path(folder).glob("*.tgz"))
+        if len(archives) != 1:
+            raise RunError("npm pack must produce exactly one archive")
+        installed = Path(folder) / "installed plugin"
+        unpack_verified_package(archives[0], fresh, installed)
+        run_command(["node", node_check, str(installed)], node_child_environment(env))
+    print("PASS: fresh build matches tracked plugin; packed payload preserves all files, bytes and modes")
 
 
 def run_marketplace_contract(env: dict[str, str]) -> None:

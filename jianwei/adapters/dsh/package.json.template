@@ -14,19 +14,7 @@
     "type": "git",
     "url": "$GIT_REPOSITORY"
   },
-  "files": [
-    "host",
-    "skills",
-    "scripts",
-    "cordis.patch.yml",
-    "plugin.json",
-    ".claude-plugin",
-    ".codex-plugin",
-    ".env.example",
-    "README.md",
-    "INSTALL.md",
-    "manifest.json"
-  ],
+  "files": "$FILES",
   "dsh": {
     "bundle": {
       "patch": "./cordis.patch.yml"

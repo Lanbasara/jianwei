@@ -8,10 +8,12 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))
 from build_jianwei import build, relative_file, target_path
+import build_jianwei
 
 
 class Distribution(unittest.TestCase):
@@ -69,6 +71,33 @@ class Distribution(unittest.TestCase):
         self.assertEqual(set(distribution["runtime_files"]), {
             "runtime/runtime.py", "runtime/setup.py", "runtime/ty-launcher"
         })
+
+    def test_dsh_files_are_derived_from_the_complete_payload(self):
+        package = json.loads((self.bundle / "package.json").read_text(encoding="utf-8"))
+        manifest = json.loads((self.bundle / "manifest.json").read_text(encoding="utf-8"))
+        self.assertEqual(package["files"], sorted({*manifest["files"], "manifest.json"}))
+
+    def test_new_declared_resources_reach_dsh_without_adapter_edits(self):
+        source = self.work / "source"
+        shutil.copytree(ROOT / "jianwei", source)
+        config = source / "distribution.json"
+        distribution = json.loads(config.read_text(encoding="utf-8"))
+        for relative in ("GUIDE.md", "references/new-topic.txt"):
+            path = source / relative
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("new shared resource\n", encoding="utf-8")
+            distribution["common_files"][relative] = relative
+        (source / "unlisted.txt").write_text("not a product input\n", encoding="utf-8")
+        config.write_text(json.dumps(distribution), encoding="utf-8")
+        bundle = self.work / "extended bundle"
+        with patch.object(build_jianwei, "SOURCE", source), patch.object(build_jianwei, "CONFIG", config):
+            build(bundle)
+        package = json.loads((bundle / "package.json").read_text(encoding="utf-8"))
+        for relative in ("GUIDE.md", "references/new-topic.txt"):
+            self.assertIn(relative, package["files"])
+            self.assertEqual((bundle / relative).read_bytes(), (source / relative).read_bytes())
+        self.assertNotIn("unlisted.txt", package["files"])
+        self.assertFalse((bundle / "unlisted.txt").exists())
 
     def test_research_then_report_references_skills_in_order(self):
         workflow = ROOT / "jianwei/skills/research-then-report/SKILL.md"

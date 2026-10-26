@@ -44,9 +44,10 @@ The registry contains runner identifiers, never commands, and a suite ID must
 equal its runner ID. Each runner capability also fixes the exact ordered file
 manifest; registry files cannot be swapped or expanded independently.
 `qa/run.py` maps each identifier to reviewed argv arrays or an in-process build
-comparison, runs subprocesses with `shell=False`, fixes the repository working
-directory, and applies timeouts. Those fixed runners, exact file manifests,
-and the gate selector are the enforcement boundary for reviewed CI work.
+comparison, runs subprocesses with `shell=False`, uses the repository working
+directory (or the fresh build for packing), and applies timeouts. Those fixed
+runners, exact file manifests, and the gate selector are the enforcement
+boundary for reviewed CI work.
 
 Every `network=false` suite receives a replaced (not appended) `PYTHONPATH`
 that loads `qa/no_network/sitecustomize.py`, independently of its credential
@@ -55,9 +56,13 @@ bind, and datagram operations while allowing files, pipes, and Unix domain
 sockets. It is only a best-effort defense against accidental access, not a
 security boundary: direct `_socket` use, Python `-S`/`-I`, and non-Python
 processes can bypass it.
-The only Node invocation is the fixed `build-contract` implementation running
-the reviewed `qa/jianwei/check_dsh.mjs`; the registry cannot add arbitrary Node
-commands or files.
+The fixed `build-contract` implementation runs offline `npm pack` with
+lifecycle scripts disabled, verifies every archived path, byte and permission
+against the fresh build, then runs `qa/jianwei/check_dsh.mjs` on that unpacked
+payload. Missing or extra files, links, duplicates, content changes and mode
+changes fail before loading the host entry. This checks all approved resources,
+not a list of regression-specific filenames. It requires local Node.js and npm;
+the registry cannot add arbitrary Node commands or files.
 
 `marketplace-contract` is an offline PR gate. It creates local Git fixtures
 and verifies that Marketplace catalogs pin the committed `plugin/` subtree,
@@ -108,8 +113,9 @@ and temporary directories point to a fresh private directory for the lifetime
 of the whole gate or suite and are removed afterward. On a workstation where
 the selected `node` is a Volta shim, only the fixed Node contract child derives
 `VOLTA_HOME` from that selected executable so it can use the already-installed
-runtime; Python and other suite children never receive it, and no Node
-configuration variables are inherited.
+runtime (including its npm pack child); Python and other suite children never
+receive it, and no Node configuration variables are inherited. npm uses private
+cache and user/global configuration paths, never workstation credentials.
 The runner replaces `PYTHONPATH` with the no-network guard
 path, then selects only registered `ci` suites. An individually selected
 `credentials=none` suite gets the same isolation. `external-local` suites may

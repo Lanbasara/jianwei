@@ -16,5 +16,6 @@ When changing Jianwei packaging, runtime, skills, or host integration, read
 - Keep the release-shaped files at the repository root unchanged while they
   provide v0.1.1 compatibility. They are not inputs to future builds.
 - Keep every host on the same assembled skill set and shared runtime behavior.
-- Complete packaging changes only after the offline Jianwei tests, a fresh
-  build, the DSH registration check, and a comparison with `plugin/` pass.
+- Complete packaging changes only after the offline Jianwei tests and
+  `python qa/run.py --suite build-contract` pass, including the packaged-payload
+  invariant in `ARCHITECTURE.md`.
