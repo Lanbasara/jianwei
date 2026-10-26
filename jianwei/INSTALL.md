@@ -1,10 +1,10 @@
-# Jianwei 0.2.1 安装与自行验收
+# Jianwei 0.2.5 安装与自行验收
 
 当前含 setup、tanyuan、research、report 与 research-then-report。不需要另装 tanyuan，也不需要克隆 huoguang。
 
 ## Claude Code
 
-以下命令须等 `jianwei-marketplace` 中的 Jianwei 条目发布 0.2.1 后使用：
+以下命令须等 `jianwei-marketplace` 中的 Jianwei 条目发布 0.2.5 后使用：
 
 ```bash
 claude plugin marketplace add Lanbasara/jianwei-marketplace
@@ -16,7 +16,7 @@ claude plugin list
 
 ## Codex
 
-以下命令须等 `jianwei-marketplace` 中的 Jianwei 条目发布 0.2.1 后使用：
+以下命令须等 `jianwei-marketplace` 中的 Jianwei 条目发布 0.2.5 后使用：
 
 ```bash
 codex plugin marketplace add Lanbasara/jianwei-marketplace
@@ -38,14 +38,14 @@ CLI 语法针对本机 **0.163.0-alpha.11.2** 的帮助核对。若旧版没有 
 https://raw.githubusercontent.com/Lanbasara/jianwei-marketplace/main/dsh/index.json
 ```
 
-等市场中的 Jianwei 条目发布 0.2.1 后，在见微市场中选择 `jianwei`，确认版本并安装、启用，按宿主提示重载或重启。然后在同一 profile 的任意工作目录新建任务。若没有「发现」页，先在实验性插件中启用自定义插件市场；`v0.2.1` tag 发布后，也可通过「添加插件」直接输入 `git+https://github.com/Lanbasara/jianwei.git#v0.2.1&path:/plugin`。
+等市场中的 Jianwei 条目发布 0.2.5 后，在见微市场中选择 `jianwei`，确认版本并安装、启用，按宿主提示重载或重启。然后在同一 profile 的任意工作目录新建任务。若没有「发现」页，先在实验性插件中启用自定义插件市场；`v0.2.5` tag 发布后，也可通过「添加插件」直接输入 `git+https://github.com/Lanbasara/jianwei.git#v0.2.5&path:/plugin`。
 
 此地址是 DSH 原生 format 1 市场索引，不是 npm registry，也不是 GitHub 仓库页面。索引把版本映射到固定 Git commit，由 DSH 生成安装地址。当前未发布 npm 包，请勿输入裸包名 `jianwei` 从 npm 安装。
 
 **CLI**：使用你实际运行的 profile，下面以 `web` 为例：
 
 ```bash
-dsh plugin --profile web add 'git+https://github.com/Lanbasara/jianwei.git#v0.2.1&path:/plugin'
+dsh plugin --profile web add 'git+https://github.com/Lanbasara/jianwei.git#v0.2.5&path:/plugin'
 dsh web
 ```
 
