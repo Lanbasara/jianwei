@@ -48,9 +48,9 @@ RUNNER_CAPABILITIES = {
         "runtime": "python",
         "files": ("qa/tanyuan/evals/selftest/test_judges.py",),
     },
-    # This is the sole reviewed Node capability. It runs only the fixed DSH
-    # contract script after the fixed Python build; registry data cannot add
-    # commands or select another JavaScript file.
+    # This is the sole reviewed Node capability: fixed offline npm pack and
+    # DSH registration on the verified payload after the Python build.
+    # Registry data cannot add commands or select another JavaScript file.
     "build-contract": {
         "network": False,
         "runtime": "fixed-python-node",

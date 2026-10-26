@@ -31,6 +31,8 @@ to that host:
 JSON templates use exact `$TOKEN` values supplied by the builder. Adapters may
 describe identity, paths, compatibility, and registration. Product behavior,
 credentials, network access, and copies of skill instructions belong elsewhere.
+The DSH template uses `$FILES`, derived from approved assembly outputs; it does
+not maintain a separate hand-written resource list.
 
 ## Assembly interface
 
@@ -68,6 +70,10 @@ v0.1.1 installation layout and are not assembly inputs.
 4. Release inputs are explicit allowlists; development, QA, report, cache, and
    credential files do not enter the bundle.
 5. Generated manifests agree on product identity and version.
+6. Packaging preserves the entire approved payload: identical file paths,
+   bytes, and permissions. A resource present in the build but absent after
+   package-manager filtering is a failed release contract. New resources enter
+   through the assembly inputs; host adapters inherit that inventory.
 
 Verify these invariants with:
 
@@ -75,7 +81,12 @@ Verify these invariants with:
 # Point this at Python 3.10+ with the exact versions in tanyuan/requirements.txt.
 export JIANWEI_TEST_PYTHON=/absolute/path/to/prepared/python
 PYTHONDONTWRITEBYTECODE=1 "$JIANWEI_TEST_PYTHON" -m unittest discover -s qa/jianwei -v
-python3 scripts/build_jianwei.py --out /tmp/jianwei-check
-node qa/jianwei/check_dsh.mjs /tmp/jianwei-check
-diff -qr plugin /tmp/jianwei-check
+"$JIANWEI_TEST_PYTHON" qa/run.py --suite build-contract
 ```
+
+The build contract compares a fresh build with `plugin/`, runs an offline
+`npm pack` with lifecycle scripts disabled, verifies and unpacks its exact
+payload, then runs DSH registration against that unpacked directory. This
+checks the package-manager filtering seam used by DSH; it does not claim to
+test a live host session or model instruction-following. It runs in both the
+pull-request and release gates and requires local Node.js and npm.

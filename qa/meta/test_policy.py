@@ -2,10 +2,12 @@
 from __future__ import annotations
 
 import copy
+import io
 import json
 import re
 import subprocess
 import sys
+import tarfile
 import tempfile
 import unittest
 from pathlib import Path
@@ -438,6 +440,50 @@ class PolicyValidationTests(unittest.TestCase):
         for value in ("../outside.py", "/absolute/test.py", "qa/test_*.py"):
             with self.subTest(value=value):
                 self.assert_invalid(registry(suite([value])))
+
+
+class PackagePayloadTests(unittest.TestCase):
+    def test_archive_must_preserve_the_complete_payload(self):
+        for mutation in (None, "missing", "extra", "duplicate", "content", "mode", "link", "escape"):
+            with self.subTest(mutation=mutation), tempfile.TemporaryDirectory() as folder:
+                root = Path(folder)
+                expected = root / "built"
+                expected.mkdir()
+                files = {"GUIDE.md": b"guide", "references/topic.txt": b"topic", "bin/tool": b"tool"}
+                for name, content in files.items():
+                    path = expected / name
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    path.write_bytes(content)
+                    path.chmod(0o755 if name == "bin/tool" else 0o644)
+                archive = root / "package.tgz"
+                with tarfile.open(archive, "w:gz") as package:
+                    for name, original in files.items():
+                        if mutation == "missing" and name == "GUIDE.md":
+                            continue
+                        content = b"wrong" if mutation == "content" and name == "GUIDE.md" else original
+                        member = tarfile.TarInfo("package/" + name)
+                        member.mode = (expected / name).stat().st_mode & 0o777
+                        member.size = len(content)
+                        if mutation == "mode" and name == "bin/tool":
+                            member.mode = 0o644
+                        if mutation == "link" and name == "GUIDE.md":
+                            member.type = tarfile.SYMTYPE
+                            member.linkname = "../outside"
+                        package.addfile(member, io.BytesIO(content))
+                        if mutation == "duplicate" and name == "GUIDE.md":
+                            package.addfile(member, io.BytesIO(content))
+                    if mutation in ("extra", "escape"):
+                        member = tarfile.TarInfo("package/" + ("extra.txt" if mutation == "extra" else "../outside"))
+                        package.addfile(member)
+                destination = root / "installed"
+                if mutation is None:
+                    qa_run.unpack_verified_package(archive, expected, destination)
+                    qa_run.assert_same_tree(expected, destination)
+                    self.assertEqual((destination / "bin/tool").stat().st_mode & 0o777, 0o755)
+                else:
+                    with self.assertRaises(qa_run.RunError):
+                        qa_run.unpack_verified_package(archive, expected, destination)
+                    self.assertFalse((root / "outside").exists())
 
 
 class SelectionTests(unittest.TestCase):

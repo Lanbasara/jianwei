@@ -181,13 +181,6 @@ def build(out: Path) -> dict:
                     "author": distribution["identity"]["author"],
                     "repository": distribution["identity"]["repository"]}
         write_json(stage / "plugin.json", {"$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json", **identity})
-        tokens = {"$NAME": identity["name"], "$VERSION": identity["version"],
-                  "$DESCRIPTION": identity["description"], "$AUTHOR": identity["author"],
-                  "$REPOSITORY": identity["repository"],
-                  "$GIT_REPOSITORY": "git+" + identity["repository"] + ".git"}
-        for adapter in distribution["adapters"].values():
-            for source, target in adapter["templates"].items():
-                render_template(relative_file(SOURCE, source), target_path(stage, target), tokens)
         catalog = []
         for name in distribution["skills"]:
             text = (stage / "skills" / name / "SKILL.md").read_text(encoding="utf-8")
@@ -196,6 +189,19 @@ def build(out: Path) -> dict:
                 raise ValueError("当前发布器要求 name 与 description 使用单行 frontmatter。")
             catalog.append({"name": name, "description": match[2]})
         write_json(stage / "host/catalog.json", catalog)
+        # Package only approved assembly outputs, including files still to be
+        # rendered. Adapters must not maintain a second product allowlist.
+        payload_files = {p.relative_to(stage).as_posix() for p in stage.rglob("*") if p.is_file()}
+        template_files = {target for adapter in distribution["adapters"].values()
+                          for target in adapter["templates"].values()}
+        tokens = {"$NAME": identity["name"], "$VERSION": identity["version"],
+                  "$DESCRIPTION": identity["description"], "$AUTHOR": identity["author"],
+                  "$REPOSITORY": identity["repository"],
+                  "$GIT_REPOSITORY": "git+" + identity["repository"] + ".git",
+                  "$FILES": sorted(payload_files | template_files | {"manifest.json"})}
+        for adapter in distribution["adapters"].values():
+            for source, target in adapter["templates"].items():
+                render_template(relative_file(SOURCE, source), target_path(stage, target), tokens)
         upstream_files = json.loads((upstream / "manifest.json").read_text(encoding="utf-8"))["files"]
         hashes = {p.relative_to(stage).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest()
                   for p in sorted(stage.rglob("*")) if p.is_file()}
