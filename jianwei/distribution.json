@@ -17,6 +17,7 @@
   "common_files": {
     "README.md": "README.md",
     "INSTALL.md": "INSTALL.md",
+    "WORKSPACE.md": "WORKSPACE.md",
     "skills/setup/SKILL.md": "skills/setup/SKILL.md",
     "skills/research/SKILL.md": "skills/research/SKILL.md",
     "skills/report/SKILL.md": "skills/report/SKILL.md",
