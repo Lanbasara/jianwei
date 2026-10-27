@@ -15,9 +15,9 @@
     "plugin.json": "ea9633a0e96da76f427ea6ed70944ba0673c0021f6438d5030e211801b23c864",
     "scripts/runtime.py": "d7749e5e3ef7deecb1ceed5a723832dd524a6b604e384584ad7046e72ce5e44a",
     "scripts/setup.py": "eb23c4d9473b245813cf32d3b6b21a7f15c618d4e812f5ef3e8b6c1996fb7b4a",
-    "skills/advise/SKILL.md": "95085e0091c75ba8ece93691a79be62c916f359b2d2a5d631347794bc119d84a",
+    "skills/advise/SKILL.md": "1eca22bf56ba5c94bc2c09ed49e0a331f0a9a1014f419ec601ddb84a3939d19f",
     "skills/report/SKILL.md": "2bd675efa816876833886b3361ab9c3ecda334bcb350c64b456099e841d19c54",
-    "skills/research/SKILL.md": "d1ccfcc1c4d6aa048b87a62e0b99aa650f1188c45c6bbe4d0ddad8196a85fd52",
+    "skills/research/SKILL.md": "5b95d1f543dad5ba7992b1ad780a6ee987a3db96c9fcbaa2529ef97b2b44e01c",
     "skills/research-then-report/SKILL.md": "dcbc29d35b55d5f6eb7dc3d0ab19951c3abaf8c2886f39c2ab86351a4e94e958",
     "skills/setup/SKILL.md": "85fa6835321b38cbe6bd41de30c940eaa6e83d3d1b2668b94777eecbfab5963d",
     "skills/tanyuan/SKILL.md": "9ce1a9618e56c7c4dc52249d366f2514be2d6e20e6baad3e76d94177ea3b7157",
@@ -134,10 +134,10 @@
       "sha256": "85fa6835321b38cbe6bd41de30c940eaa6e83d3d1b2668b94777eecbfab5963d"
     },
     "research": {
-      "sha256": "d1ccfcc1c4d6aa048b87a62e0b99aa650f1188c45c6bbe4d0ddad8196a85fd52"
+      "sha256": "5b95d1f543dad5ba7992b1ad780a6ee987a3db96c9fcbaa2529ef97b2b44e01c"
     },
     "advise": {
-      "sha256": "95085e0091c75ba8ece93691a79be62c916f359b2d2a5d631347794bc119d84a"
+      "sha256": "1eca22bf56ba5c94bc2c09ed49e0a331f0a9a1014f419ec601ddb84a3939d19f"
     },
     "report": {
       "sha256": "2bd675efa816876833886b3361ab9c3ecda334bcb350c64b456099e841d19c54"
