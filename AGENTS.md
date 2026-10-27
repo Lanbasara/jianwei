@@ -1,5 +1,10 @@
 # Jianwei repository rules
 
+Read [development philosophy](jianwei/PHILOSOPHY.md) before designing or changing
+skill responsibilities, instructions, composition, workspace conventions, or
+quality evaluation. It explains product goals and how to evolve skills without
+accumulating case-specific patches.
+
 Read `jianwei/ARCHITECTURE.md` before changing packaging, runtime, skills, or
 host integration.
 
