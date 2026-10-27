@@ -7,7 +7,7 @@
     ".env.example": "6200af1881e3c8bce527b74b05819acc5011492ec0ff3c62f7dc7f1622bd61a9",
     "INSTALL.md": "30f32c0dbad435acd130761c882043d2f597cb676e4639f5b818f34ff8cb1fc8",
     "README.md": "f9c1716a418747e821fcb6ec2b90da4ac64f9bb0991d6ea5528dd8ce8724f21b",
-    "WORKSPACE.md": "fa7035a0a4b19917d2d9092c946abe128449b261f229db01705b42c5a502eae0",
+    "WORKSPACE.md": "ef814c0423334df00078206f1dcab761e87a0a4c91858a04c9f1926cdd328499",
     "cordis.patch.yml": "f2be4eb42c32ccf35bbe6346c20ece698e14aef966804f36e3a13c5a2e689147",
     "host/catalog.json": "b505fed3ea51caf502aeae1ac1814690bb9993ad26cd7b6b141adc0e57cb3bb3",
     "host/dsh.mjs": "83df1812230f47efad9347ff8ca9242a227d95d5647119532a0871b7cfc4fba7",
@@ -15,9 +15,9 @@
     "plugin.json": "ea9633a0e96da76f427ea6ed70944ba0673c0021f6438d5030e211801b23c864",
     "scripts/runtime.py": "d7749e5e3ef7deecb1ceed5a723832dd524a6b604e384584ad7046e72ce5e44a",
     "scripts/setup.py": "eb23c4d9473b245813cf32d3b6b21a7f15c618d4e812f5ef3e8b6c1996fb7b4a",
-    "skills/advise/SKILL.md": "694f30a2357c69a74a692e78229dc73b10916068beb27bc175eae501fd4906cf",
+    "skills/advise/SKILL.md": "1eca22bf56ba5c94bc2c09ed49e0a331f0a9a1014f419ec601ddb84a3939d19f",
     "skills/report/SKILL.md": "2bd675efa816876833886b3361ab9c3ecda334bcb350c64b456099e841d19c54",
-    "skills/research/SKILL.md": "11e9b93ff95d35c4b4c3f7bbb583cc3cb386d703142ce7eea73d581fe001b1bf",
+    "skills/research/SKILL.md": "5b95d1f543dad5ba7992b1ad780a6ee987a3db96c9fcbaa2529ef97b2b44e01c",
     "skills/research-then-report/SKILL.md": "dcbc29d35b55d5f6eb7dc3d0ab19951c3abaf8c2886f39c2ab86351a4e94e958",
     "skills/setup/SKILL.md": "85fa6835321b38cbe6bd41de30c940eaa6e83d3d1b2668b94777eecbfab5963d",
     "skills/tanyuan/SKILL.md": "9ce1a9618e56c7c4dc52249d366f2514be2d6e20e6baad3e76d94177ea3b7157",
@@ -134,10 +134,10 @@
       "sha256": "85fa6835321b38cbe6bd41de30c940eaa6e83d3d1b2668b94777eecbfab5963d"
     },
     "research": {
-      "sha256": "11e9b93ff95d35c4b4c3f7bbb583cc3cb386d703142ce7eea73d581fe001b1bf"
+      "sha256": "5b95d1f543dad5ba7992b1ad780a6ee987a3db96c9fcbaa2529ef97b2b44e01c"
     },
     "advise": {
-      "sha256": "694f30a2357c69a74a692e78229dc73b10916068beb27bc175eae501fd4906cf"
+      "sha256": "1eca22bf56ba5c94bc2c09ed49e0a331f0a9a1014f419ec601ddb84a3939d19f"
     },
     "report": {
       "sha256": "2bd675efa816876833886b3361ab9c3ecda334bcb350c64b456099e841d19c54"
