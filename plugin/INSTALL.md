@@ -1,10 +1,10 @@
-# Jianwei 0.2.8 安装与自行验收
+# Jianwei 0.3.0 安装与自行验收
 
-当前含 setup、tanyuan、research、portfolio、advise、report 与 research-then-report。不需要另装 tanyuan，也不需要克隆 huoguang。
+当前含 setup、tanyuan、research、portfolio、advise、reflect、report 与 research-then-report。不需要另装 tanyuan，也不需要克隆 huoguang。
 
 ## Claude Code
 
-以下命令须等 `jianwei-marketplace` 中的 Jianwei 条目发布 0.2.8 后使用：
+以下命令须等 `jianwei-marketplace` 中的 Jianwei 条目发布 0.3.0 后使用：
 
 ```bash
 claude plugin marketplace add Lanbasara/jianwei-marketplace
@@ -12,11 +12,11 @@ claude plugin install jianwei@jianwei --scope user
 claude plugin list
 ```
 
-在任意任务目录启动新会话。技能为 `/jianwei:setup`、`/jianwei:tanyuan`、`/jianwei:research`、`/jianwei:portfolio`、`/jianwei:advise`、`/jianwei:report`、`/jianwei:research-then-report`。已有会话按宿主提示重新加载或新开会话。用户级安装在本机各项目可用，项目设置仍可覆盖是否启用。
+在任意任务目录启动新会话。技能为 `/jianwei:setup`、`/jianwei:tanyuan`、`/jianwei:research`、`/jianwei:portfolio`、`/jianwei:advise`、`/jianwei:reflect`、`/jianwei:report`、`/jianwei:research-then-report`。已有会话按宿主提示重新加载或新开会话。用户级安装在本机各项目可用，项目设置仍可覆盖是否启用。
 
 ## Codex
 
-以下命令须等 `jianwei-marketplace` 中的 Jianwei 条目发布 0.2.8 后使用：
+以下命令须等 `jianwei-marketplace` 中的 Jianwei 条目发布 0.3.0 后使用：
 
 ```bash
 codex plugin marketplace add Lanbasara/jianwei-marketplace
@@ -38,20 +38,20 @@ CLI 语法针对本机 **0.163.0-alpha.11.2** 的帮助核对。若旧版没有 
 https://raw.githubusercontent.com/Lanbasara/jianwei-marketplace/main/dsh/index.json
 ```
 
-等市场中的 Jianwei 条目发布 0.2.8 后，在见微市场中选择 `jianwei`，确认版本并安装、启用，按宿主提示重载或重启。然后在同一 profile 的任意工作目录新建任务。若没有「发现」页，先在实验性插件中启用自定义插件市场；`v0.2.8` tag 发布后，也可通过「添加插件」直接输入 `git+https://github.com/Lanbasara/jianwei.git#v0.2.8&path:/plugin`。
+等市场中的 Jianwei 条目发布 0.3.0 后，在见微市场中选择 `jianwei`，确认版本并安装、启用，按宿主提示重载或重启。然后在同一 profile 的任意工作目录新建任务。若没有「发现」页，先在实验性插件中启用自定义插件市场；`v0.3.0` tag 发布后，也可通过「添加插件」直接输入 `git+https://github.com/Lanbasara/jianwei.git#v0.3.0&path:/plugin`。
 
 此地址是 DSH 原生 format 1 市场索引，不是 npm registry，也不是 GitHub 仓库页面。索引把版本映射到固定 Git commit，由 DSH 生成安装地址。当前未发布 npm 包，请勿输入裸包名 `jianwei` 从 npm 安装。
 
 **CLI**：使用你实际运行的 profile，下面以 `web` 为例：
 
 ```bash
-dsh plugin --profile web add 'git+https://github.com/Lanbasara/jianwei.git#v0.2.8&path:/plugin'
+dsh plugin --profile web add 'git+https://github.com/Lanbasara/jianwei.git#v0.3.0&path:/plugin'
 dsh web
 ```
 
 若 shell 没有 `dsh` 但装了 Desktop，使用应用内插件管理。不要重置已有 profile；CLI 与 Desktop 的 profile 不是可以随意互换的名称。
 
-技能名是 **`jianwei-setup`**、**`jianwei-tanyuan`**、**`jianwei-research`**、**`jianwei-portfolio`**、**`jianwei-advise`**、**`jianwei-report`**、**`jianwei-research-then-report`**，可从技能入口选择或直接要求 agent 使用。包只注册技能，不更换模型、agent preset、多 agent 工具或权限。接口以 DSH **0.2.1-rc.3** 核查；其他 profile 需分别安装。
+技能名是 **`jianwei-setup`**、**`jianwei-tanyuan`**、**`jianwei-research`**、**`jianwei-portfolio`**、**`jianwei-advise`**、**`jianwei-reflect`**、**`jianwei-report`**、**`jianwei-research-then-report`**，可从技能入口选择或直接要求 agent 使用。包只注册技能，不更换模型、agent preset、多 agent 工具或权限。接口以 DSH **0.2.1-rc.3** 核查；其他 profile 需分别安装。
 
 Git 包包含准备好的 ESM 注册文件，没有 prepare/postinstall 或 npm 构建步骤。Python 依赖在下面的显式初始化中准备。
 
@@ -84,13 +84,14 @@ python3 "/absolute/path/to/installed/jianwei/scripts/setup.py" \
 
 选择开发仓之外的空目录，再选择另一个已有工作目录，各开一次新任务。
 
-1. **发现与运行**：七项技能可见；setup 能解释当前状态，`ty --version` 返回 tanyuan 版本，`ty tools` 能列出能力；第二个任务目录不再安装依赖。
+1. **发现与运行**：八项技能可见；setup 能解释当前状态，`ty --version` 返回 tanyuan 版本，`ty tools` 能列出能力；第二个任务目录不再安装依赖。
 2. **取数**：用已配置服务完成熟悉的小查询，检查标的、时间、单位和来源；缺权限或服务失败应明确报告。
 3. **研究与协作**：给出值得分工的问题，要求宿主原生子 agent 调查，另一个未承担原论证的 agent 复核关键结论。检查实际执行记录及有出处的自然语言底稿，不只看最终文字宣称“已复核”。
 4. **研报衔接**：要求研究并生成 HTML 研报，确认 agent 选择 research-then-report，先完整执行 research，再委派通用子智能体执行 report 并接收成稿；生成的 HTML 可以独立打开。
 5. **产物位置**：底稿、研报与附件留在任务目录；Python 环境、默认凭据模板和缓存只在当前插件副本的 `.runtime/`，任务目录没有 `.tanyuan` 缓存。
 6. **投资建议**：用已有研究、外部材料和相关持仓背景分别提出选择，检查 advise 是否能给出有依据的建议、按需提问并保存可追溯记录。变更关键证据或目标，观察建议是否相应调整；保持关键条件不变，检查它是否能维持仍然成立的判断。建议质量需由人结合具体情境审阅，离线构建检查不证明模型行为。
 7. **组合分析**：分别提供实际持仓与假设方案，检查 portfolio 能否解释底层重叠、共同收益与风险来源，并在一致口径下比较调整影响。以局部更新接续旧快照，确认沿用信息保留原时点、未知仍为未知，假设方案没有变成用户实际持仓。结论应回答组合问题，并可供 advise 复用。
+8. **复盘**：分别从外部市场材料和已有投资经历提出问题，检查 reflect 能否解释关键变化、区分当时依据与后来发展，并说明发现的具体意义。正式分析保存为 case，同一任务的补充沿用成果；历史原稿保持可追查，局部材料不被扩成完整行为或业绩，个案发现不自动写入默认加载的经验规则。
 
 示例：
 
@@ -103,6 +104,8 @@ research-then-report 用于从投资问题到最终 HTML 研报的完整流程�
 可以直接要求：“使用 advise，结合这份材料，帮我判断是否应调整这项投资，解释你的建议及其取舍。”不要求先做 research，也不要求先提供完整持仓；是否补充研究或背景取决于当前选择。建议保存在日期目录的 `decision.md`，具体文件职责见 [WORKSPACE.md](WORKSPACE.md)。
 
 也可以独立要求：“使用 portfolio，分析这组投资主要依赖什么、是否存在重复暴露，以及这个调整方案会改变什么。”输入可以来自对话或现有材料，实际与假设需区分；分析保存到 case。`portfolio.md` 只承接用户提供的实际持仓背景，收到更新时按[快照写法](references/portfolio-snapshot.md)维护。
+
+也可以要求：“使用 reflect，复盘这段市场变化，解释重要转折和预期差异，对后续研究有什么意义。”或指定一项旧分析、建议或投资经历。无需先有持仓、交易记录或上次复盘；agent 按当前问题渐进读取材料，形成可独立理解、引用有据的分析。
 
 ## 升级与卸载
 

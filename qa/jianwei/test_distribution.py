@@ -52,7 +52,7 @@ class Distribution(unittest.TestCase):
             if relative == "skills/tanyuan/bin/ty":
                 path = path.with_name("ty-upstream")
             self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(), digest)
-        for name in ("setup", "research", "portfolio", "advise", "report", "research-then-report"):
+        for name in ("setup", "research", "portfolio", "advise", "reflect", "report", "research-then-report"):
             self.assertEqual((self.bundle / f"skills/{name}/SKILL.md").read_bytes(),
                              (ROOT / f"jianwei/skills/{name}/SKILL.md").read_bytes())
         self.assertEqual((self.bundle / "references/portfolio-snapshot.md").read_bytes(),
@@ -149,6 +149,7 @@ class Distribution(unittest.TestCase):
         self.assertTrue((self.bundle / "skills/report/SKILL.md").is_file())
         self.assertTrue((self.bundle / "skills/advise/SKILL.md").is_file())
         self.assertTrue((self.bundle / "skills/portfolio/SKILL.md").is_file())
+        self.assertTrue((self.bundle / "skills/reflect/SKILL.md").is_file())
         self.assertTrue((self.bundle / "skills/research-then-report/SKILL.md").is_file())
 
     def test_unconfigured_launcher_gives_exact_setup_path_without_writing(self):
