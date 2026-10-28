@@ -52,7 +52,8 @@ package.json
 cordis.patch.yml
 host/{dsh.mjs,catalog.json}
 scripts/{setup.py,runtime.py}
-skills/{setup,tanyuan,research,advise,report,research-then-report}
+skills/{setup,tanyuan,research,portfolio,advise,report,research-then-report}
+references/portfolio-snapshot.md
 ```
 
 The repository-root `plugin/` directory contains the reviewed, tracked release
