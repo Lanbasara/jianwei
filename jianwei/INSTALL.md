@@ -1,10 +1,10 @@
-# Jianwei 0.3.0 安装与自行验收
+# Jianwei 0.4.0 安装与自行验收
 
 当前含 setup、tanyuan、research、portfolio、advise、reflect、report 与 research-then-report。不需要另装 tanyuan，也不需要克隆 huoguang。
 
 ## Claude Code
 
-以下命令须等 `jianwei-marketplace` 中的 Jianwei 条目发布 0.3.0 后使用：
+以下命令须等 `jianwei-marketplace` 中的 Jianwei 条目发布 0.4.0 后使用：
 
 ```bash
 claude plugin marketplace add Lanbasara/jianwei-marketplace
@@ -16,7 +16,7 @@ claude plugin list
 
 ## Codex
 
-以下命令须等 `jianwei-marketplace` 中的 Jianwei 条目发布 0.3.0 后使用：
+以下命令须等 `jianwei-marketplace` 中的 Jianwei 条目发布 0.4.0 后使用：
 
 ```bash
 codex plugin marketplace add Lanbasara/jianwei-marketplace
@@ -38,14 +38,14 @@ CLI 语法针对本机 **0.163.0-alpha.11.2** 的帮助核对。若旧版没有 
 https://raw.githubusercontent.com/Lanbasara/jianwei-marketplace/main/dsh/index.json
 ```
 
-等市场中的 Jianwei 条目发布 0.3.0 后，在见微市场中选择 `jianwei`，确认版本并安装、启用，按宿主提示重载或重启。然后在同一 profile 的任意工作目录新建任务。若没有「发现」页，先在实验性插件中启用自定义插件市场；`v0.3.0` tag 发布后，也可通过「添加插件」直接输入 `git+https://github.com/Lanbasara/jianwei.git#v0.3.0&path:/plugin`。
+等市场中的 Jianwei 条目发布 0.4.0 后，在见微市场中选择 `jianwei`，确认版本并安装、启用，按宿主提示重载或重启。然后在同一 profile 的任意工作目录新建任务。若没有「发现」页，先在实验性插件中启用自定义插件市场；`v0.4.0` tag 发布后，也可通过「添加插件」直接输入 `git+https://github.com/Lanbasara/jianwei.git#v0.4.0&path:/plugin`。
 
 此地址是 DSH 原生 format 1 市场索引，不是 npm registry，也不是 GitHub 仓库页面。索引把版本映射到固定 Git commit，由 DSH 生成安装地址。当前未发布 npm 包，请勿输入裸包名 `jianwei` 从 npm 安装。
 
 **CLI**：使用你实际运行的 profile，下面以 `web` 为例：
 
 ```bash
-dsh plugin --profile web add 'git+https://github.com/Lanbasara/jianwei.git#v0.3.0&path:/plugin'
+dsh plugin --profile web add 'git+https://github.com/Lanbasara/jianwei.git#v0.4.0&path:/plugin'
 dsh web
 ```
 
@@ -92,6 +92,7 @@ python3 "/absolute/path/to/installed/jianwei/scripts/setup.py" \
 6. **投资建议**：用已有研究、外部材料和相关持仓背景分别提出选择，检查 advise 是否能给出有依据的建议、按需提问并保存可追溯记录。变更关键证据或目标，观察建议是否相应调整；保持关键条件不变，检查它是否能维持仍然成立的判断。建议质量需由人结合具体情境审阅，离线构建检查不证明模型行为。
 7. **组合分析**：分别提供实际持仓与假设方案，检查 portfolio 能否解释底层重叠、共同收益与风险来源，并在一致口径下比较调整影响。以局部更新接续旧快照，确认沿用信息保留原时点、未知仍为未知，假设方案没有变成用户实际持仓。结论应回答组合问题，并可供 advise 复用。
 8. **复盘**：分别从外部市场材料和已有投资经历提出问题，检查 reflect 能否解释关键变化、区分当时依据与后来发展，并说明发现的具体意义。正式分析保存为 case，同一任务的补充沿用成果；历史原稿保持可追查，局部材料不被扩成完整行为或业绩，个案发现不自动写入默认加载的经验规则。
+9. **已有成果成稿**：分别指定已有研究、组合分析和含条件的投资建议交给 report，检查 HTML 是否独立可读、帮助理解，同时保留各自的性质、判断强度、条件与来源。建议没有被写成用户决定，组合分析没有被擅自补成推荐；原始成果保留，成稿可从对应记录找到。写作质量需实际阅读和查看页面，离线契约不证明可读性或忠实程度。
 
 示例：
 
@@ -99,7 +100,7 @@ python3 "/absolute/path/to/installed/jianwei/scripts/setup.py" \
 
 research 可使用 tanyuan，也可自行 Web 搜索。如果宿主禁用了子 agent，应明确披露独立复核的缺口。
 
-research-then-report 用于从投资问题到最终 HTML 研报的完整流程。report 只承接已经完成的 research；在没有研究上下文的新会话中单独使用时，需要明确指定已有研究产物。
+research-then-report 用于从投资问题到最终 HTML 研报的完整流程。report 也可承接已有组合分析、投资建议或复盘等成果；在没有相应上下文的新会话中单独使用时，明确指定已有产物。可以要求：“使用 report，将这份已有建议写成独立可读的 HTML，帮助我理解其中的判断与理由。”成稿按 [WORKSPACE.md](WORKSPACE.md) 保存并链接回原成果。
 
 可以直接要求：“使用 advise，结合这份材料，帮我判断是否应调整这项投资，解释你的建议及其取舍。”不要求先做 research，也不要求先提供完整持仓；是否补充研究或背景取决于当前选择。建议保存在日期目录的 `decision.md`，具体文件职责见 [WORKSPACE.md](WORKSPACE.md)。
 

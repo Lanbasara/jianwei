@@ -25,7 +25,7 @@
   },
   {
     "name": "report",
-    "description": "将已经完成的 Jianwei research 成果忠实写成独立可读的 HTML 投资研报。用于当前上下文已有完整研究结果，或用户明确指定已有研究产物的成稿任务。"
+    "description": "将已经形成的投资研究、分析或建议忠实写成独立可读的 HTML。用于当前上下文已有成果，或用户明确指定已有产物的成稿任务。"
   },
   {
     "name": "research-then-report",

@@ -1,8 +1,8 @@
 # 见微 · Jianwei
 
-一次安装，获得探源数据能力、专业投资研究、组合分析、投资建议、复盘与 HTML 研报 skills。支持 Claude Code、Codex、DeepSeek Harness（DSH）。
+一次安装，获得探源数据能力、专业投资研究、组合分析、投资建议、复盘与 HTML 成稿 skills。支持 Claude Code、Codex、DeepSeek Harness（DSH）。
 
-当前版本 **0.3.0**，包含 **setup**、**tanyuan 0.5.0**、**research**、**portfolio**、**advise**、**reflect**、**report** 与 **research-then-report** 八项 skill。setup 引导准备本地依赖与凭据；tanyuan 提供 ty CLI、数据能力和参考资料；research 负责调查、分析与独立复核；portfolio 分析组合的收益来源、风险关系与调整影响；advise 围绕当前投资选择比较方案并提出建议；reflect 复盘市场与投资经历，为后续投资增进理解；report 将已经完成的研究忠实写成 HTML 研报；research-then-report 在研究完成后委派通用子智能体执行 report。研究使用宿主原生多 agent，也可自由使用 Web 等工具。
+当前版本 **0.4.0**，包含 **setup**、**tanyuan 0.5.0**、**research**、**portfolio**、**advise**、**reflect**、**report** 与 **research-then-report** 八项 skill。setup 引导准备本地依赖与凭据；tanyuan 提供 ty CLI、数据能力和参考资料；research 负责调查、分析与独立复核；portfolio 分析组合的收益来源、风险关系与调整影响；advise 围绕当前投资选择比较方案并提出建议；reflect 复盘市场与投资经历，为后续投资增进理解；report 将已有研究、分析或建议忠实写成独立可读的 HTML；research-then-report 在研究完成后委派通用子智能体执行 report。研究使用宿主原生多 agent，也可自由使用 Web 等工具。
 
 advise 可直接承接用户问题、已有研究或外部材料，按需要考虑持仓背景、补充研究并与用户对齐。研究保持独立判断，建议的具体程度由问题与依据决定。成果按[工作区约定](WORKSPACE.md)沉淀；建议与用户实际作出的选择分别记录，供后续任务继续理解。
 
@@ -10,13 +10,15 @@ portfolio 可独立分析实际持仓、局部账户或假设配置，也可为 
 
 reflect 可从市场事件、投资经历、旧研判或外部材料开始，解释结果的形成，审视相关认识与选择；调查、组合分析和当前建议按问题需要组合。正式复盘按分析任务保存到 case，后续讨论沿用已有成果。历史按需查阅，复盘发现保留为有条件的分析，不自动形成默认加载的经验规则。
 
+report 以专业编辑与写作者的身份承接已有成果，根据材料、读者与用途自主决定表达，保留原成果的性质、判断强度、条件与证据关系。需要 HTML 时可以在分析或建议完成后接续，也可以独立指定已有产物成稿；原有 research-then-report 流程继续用于研究并形成研报。成稿位置和来源记录遵循[工作区约定](WORKSPACE.md)。
+
 ## 安装
 
 完整三端步骤、首次配置、升级与卸载见 **[INSTALL.md](INSTALL.md)**。
 
 专属 marketplace：<https://github.com/Lanbasara/jianwei-marketplace>，市场名 **jianwei**。
 
-以下 Claude Code 与 Codex 的 marketplace 命令须等 marketplace 中的 Jianwei 条目发布 0.3.0 后使用。DSH 直接安装命令须等 `v0.3.0` tag 发布后使用。
+以下 Claude Code 与 Codex 的 marketplace 命令须等 marketplace 中的 Jianwei 条目发布 0.4.0 后使用。DSH 直接安装命令须等 `v0.4.0` tag 发布后使用。
 
 ```bash
 # Claude Code：用户级，适用于本机各项目
@@ -28,7 +30,7 @@ codex plugin marketplace add Lanbasara/jianwei-marketplace
 codex plugin add jianwei@jianwei
 
 # DSH CLI：使用实际 profile；下面以 web 为例
-dsh plugin --profile web add 'git+https://github.com/Lanbasara/jianwei.git#v0.3.0&path:/plugin'
+dsh plugin --profile web add 'git+https://github.com/Lanbasara/jianwei.git#v0.4.0&path:/plugin'
 ```
 
 DSH Desktop 推荐在「插件 → 发现 → 添加索引源」添加：
@@ -37,7 +39,7 @@ DSH Desktop 推荐在「插件 → 发现 → 添加索引源」添加：
 https://raw.githubusercontent.com/Lanbasara/jianwei-marketplace/main/dsh/index.json
 ```
 
-marketplace 中的 Jianwei 条目发布 0.3.0 后，再从见微市场安装。索引由我们维护，Git commit 和 `plugin/` 子目录由 DSH 自动选择，无需用户编辑版本地址。0.2.1-rc.3 的第三方插件升级仍需卸载后从市场重装；当前没有发布 npm 包。
+marketplace 中的 Jianwei 条目发布 0.4.0 后，再从见微市场安装。索引由我们维护，Git commit 和 `plugin/` 子目录由 DSH 自动选择，无需用户编辑版本地址。0.2.1-rc.3 的第三方插件升级仍需卸载后从市场重装；当前没有发布 npm 包。
 
 DSH 其技能名为 `jianwei-setup`、`jianwei-tanyuan`、`jianwei-research`、`jianwei-portfolio`、`jianwei-advise`、`jianwei-reflect`、`jianwei-report`、`jianwei-research-then-report`，避免占用通用名称。Claude 使用 `/jianwei:setup`、`/jianwei:tanyuan`、`/jianwei:research`、`/jianwei:portfolio`、`/jianwei:advise`、`/jianwei:reflect`、`/jianwei:report`、`/jianwei:research-then-report`。Codex 可自然语言指定 Jianwei 插件的相应 skill，以实际技能列表为准。用户要求从投资问题开始研究并形成最终研报时，agent 使用 research-then-report；它会先完整执行 research，再委派通用子智能体执行 report，并由主智能体交付成稿。
 
