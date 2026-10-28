@@ -1,25 +1,25 @@
 {
   "name": "jianwei",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "files": {
-    ".claude-plugin/plugin.json": "8311ba621c886ecbeeb49a787d4653f5ba8c161ba8139df8548d454545dd4788",
-    ".codex-plugin/plugin.json": "df028757769ff0dc99521302bb31eea048f6df6f5f65c01cf6c8fae04d5a9d87",
+    ".claude-plugin/plugin.json": "52d9e039f8f2c2ba98a91eb56a6046cfd636e522a284f18a75170d0d29d942f3",
+    ".codex-plugin/plugin.json": "866bba80b03c2942ebc18e300299f47af449c135be988d9b4e519b3ce406dbf7",
     ".env.example": "6200af1881e3c8bce527b74b05819acc5011492ec0ff3c62f7dc7f1622bd61a9",
-    "INSTALL.md": "589616d93b30636bac5b76e52c063586ec6f2a2b50bb63dc8c14edbf98f2df29",
-    "README.md": "e3dc966459df222949743cfb1a523336b9db5f39fb2bea11b94ee038bb03c3df",
-    "WORKSPACE.md": "c70044e788a51bfb82cfb1346340b30ca924c04af7289b272fe05c0f8dba4dbb",
+    "INSTALL.md": "450b16df9787370a3d9d54b41b0d7486c0056c75606bb0d6ea842c79f67b56e1",
+    "README.md": "c5460644eb26e5aaf4c3251ba70f6f28707bba0fc562a20cdc7df466593cf724",
+    "WORKSPACE.md": "d40d72b13e7b7fdb815bf9143ed18c9aa4a492a8afa8dd6cc62b62fa702d0d6f",
     "cordis.patch.yml": "f2be4eb42c32ccf35bbe6346c20ece698e14aef966804f36e3a13c5a2e689147",
-    "host/catalog.json": "050fbb5fa1e66cbe4b68fee96ea7b4be00c386e7fd53a067de6da32048465275",
+    "host/catalog.json": "e98e2ee250a035c6955a631b3f2ec7510d2fc6b0949bcdd4734aec1de11c9814",
     "host/dsh.mjs": "83df1812230f47efad9347ff8ca9242a227d95d5647119532a0871b7cfc4fba7",
-    "package.json": "265f37cc6b4f0bf3ddf15eb4ad3b7f50a7dfc3548a08475b76cdf489adbda7e7",
-    "plugin.json": "168bb229a137eeb64a30874f22d5e83059c10a57297b838f4206157c1f5d6387",
+    "package.json": "4a00c3044135642f5479727c004bbd08945f4332885a3e68cc63a479ba373155",
+    "plugin.json": "8e6b9502bc5398265437d742c493587a067ec9f6cc72a4f444bb31ae1408766f",
     "references/portfolio-snapshot.md": "0506d92b7adf3664372e4de5cfb55fdcd29bb1048822faad21972c1f675a1be0",
     "scripts/runtime.py": "d7749e5e3ef7deecb1ceed5a723832dd524a6b604e384584ad7046e72ce5e44a",
     "scripts/setup.py": "eb23c4d9473b245813cf32d3b6b21a7f15c618d4e812f5ef3e8b6c1996fb7b4a",
     "skills/advise/SKILL.md": "2dc4da2bd181bdac610d7d44d40ca0f09eccd26e773b702b4838eb4958992ed6",
     "skills/portfolio/SKILL.md": "b33daf772034eb6f4423483ebaa89b036ad818c5a9c97120249d46fb34278e4d",
     "skills/reflect/SKILL.md": "727b6a77d7c2a08e15968fa639f95fa72f3efea74459a3f316c514e90def440e",
-    "skills/report/SKILL.md": "2bd675efa816876833886b3361ab9c3ecda334bcb350c64b456099e841d19c54",
+    "skills/report/SKILL.md": "24a20d5595a2aadbc1f09d2e64e5be42513a1cb4a60f69566a3b4b0430b3ddb9",
     "skills/research/SKILL.md": "5b95d1f543dad5ba7992b1ad780a6ee987a3db96c9fcbaa2529ef97b2b44e01c",
     "skills/research-then-report/SKILL.md": "dcbc29d35b55d5f6eb7dc3d0ab19951c3abaf8c2886f39c2ab86351a4e94e958",
     "skills/setup/SKILL.md": "85fa6835321b38cbe6bd41de30c940eaa6e83d3d1b2668b94777eecbfab5963d",
@@ -149,7 +149,7 @@
       "sha256": "727b6a77d7c2a08e15968fa639f95fa72f3efea74459a3f316c514e90def440e"
     },
     "report": {
-      "sha256": "2bd675efa816876833886b3361ab9c3ecda334bcb350c64b456099e841d19c54"
+      "sha256": "24a20d5595a2aadbc1f09d2e64e5be42513a1cb4a60f69566a3b4b0430b3ddb9"
     },
     "research-then-report": {
       "sha256": "dcbc29d35b55d5f6eb7dc3d0ab19951c3abaf8c2886f39c2ab86351a4e94e958"
