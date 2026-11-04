@@ -144,7 +144,7 @@ class TestDispatcher(unittest.TestCase):
         for name, spec in registry.REGISTRY.items():
             self.assertTrue(spec.summary, name)
             self.assertIn(spec.grade, {"L0", "L1", "L2", "L3"}, name)
-            self.assertTrue(spec.args_schema or name == "market.ping", name)
+            self.assertTrue(spec.args_schema or name in {"market.ping", "bili.pools"}, name)
 
 
 class TestCache(unittest.TestCase):

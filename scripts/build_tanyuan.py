@@ -14,13 +14,13 @@ import tempfile
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "tanyuan"
 # Explicit additions are reviewed here; never copy the repository recursively.
-MODULES = """__init__ blobs cache cli config envelope errors garden http interface registry
+MODULES = """__init__ bili_source blobs cache cli config envelope errors garden http interface registry tools/bili
 downloads dns_worker documents pdf_worker fund_sources fund_data fund_metrics tools/fund
 searchapi source_sets tushare util tools/__init__ tools/capital tools/entity
 tools/events tools/filing tools/fundamental tools/global_ tools/history
 tools/industry tools/macro tools/market tools/news tools/newsfeed tools/search""".split()
 REFERENCES = """error-playbook evidence-rules news-layer news-recovery number-style
-search-guide source-matrix workflows fund-workflow""".split()
+search-guide source-matrix workflows fund-workflow bili-source""".split()
 PRODUCT_FILES = ["SKILL.md", "bin/ty", "requirements.txt"] + [
     f"tanyuan/{name}.py" for name in MODULES
 ] + [f"references/{name}.md" for name in REFERENCES] + [

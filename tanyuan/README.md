@@ -43,6 +43,8 @@ chmod 600 .env
 
 读取顺序：进程环境变量优先；指定 `TANYUAN_ENV_FILE` 时读取该文件，否则读取安装工作区的 `.env`。不查找用户全局配置，也不向父目录搜索。即使 CLI 从子目录调用，仍读取安装工作区的 `.env`。缓存默认在该工作区 `.tanyuan/cache`，可显式通过 `TANYUAN_CACHE` 改位置。
 
+独立 bili-source 服务可配置 `BILI_SOURCE_ORIGIN` 与绝对私有 `BILI_SOURCE_STATE`，再用 `bili.pair` 配对；无需复制服务token或B站Cookie。`bili.pools/query/get` 发现授权池、有限等待及同版本续读，关闭本地响应/正文缓存。连接、重新配对和256KiB交付边界见 [bili-source 用法](references/bili-source.md)。
+
 ## 使用
 
 在所选工作区根目录执行：
