@@ -30,6 +30,7 @@ RUNNER_CAPABILITIES = {
         "network": False,
         "runtime": "python",
         "files": (
+            "qa/tanyuan/tests/test_bili_client.py",
             "qa/tanyuan/tests/test_cli_boundaries.py",
             "qa/tanyuan/tests/test_contract.py",
             "qa/tanyuan/tests/test_documents.py",

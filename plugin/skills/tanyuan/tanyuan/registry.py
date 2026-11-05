@@ -43,6 +43,9 @@ class ToolSpec:
     examples: list[dict] = field(default_factory=list)
     latency_hint_ms: int | None = None
     cache_when: Callable[[dict], bool] | None = None
+    # Pure validation before tool execution/logging; nested protocol inputs must
+    # not reach failure envelopes or usage logs when their schema is rejected.
+    validate: Callable[[dict], None] | None = None
 
     def describe(self) -> dict:
         return {
@@ -187,6 +190,8 @@ def validate_args(spec: ToolSpec, args: dict) -> dict:
             raise TanyuanError(Code.BAD_ARGUMENT, "参数组合不符合要求。",
                                hint=f"{group['keys']} 中提供 {group['min']}–{group['max']} 个参数；运行 `{help_command}`。",
                                details={"expected_group": group, "help_command": help_command})
+    if spec.validate is not None:
+        spec.validate(clean)
     return clean
 
 
@@ -293,7 +298,7 @@ def _log(tool_name: str, args: dict, ok: bool, duration_ms: int, spec: ToolSpec,
 def load_tools() -> None:
     """Import tool modules for their registration side effects."""
     from .tools import (  # noqa: F401
-        capital, entity, events, filing, fund, fundamental, history, industry, macro, market,
+        bili, capital, entity, events, filing, fund, fundamental, history, industry, macro, market,
         news, newsfeed, search,
     )
     from .tools import global_ as _global_tools  # noqa: F401
