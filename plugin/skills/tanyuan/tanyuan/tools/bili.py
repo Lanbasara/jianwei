@@ -31,7 +31,7 @@ _RETURNS = [
 ]
 
 
-@tool(name="bili.pair", summary="连接已配置的 bili-source 服务：立即取得配对码，批准后有限恢复",
+@tool(name="bili.pair", summary="首次连接或重新授权 bili-source 客户端；已有可用连接无需配对",
       covers=["不复制token的机器客户端配对", "私有凭据持久恢复", "显式restart重新连接"],
       not_covers=["B站扫码或Cookie", "自动批准来源池", "撤销旧客户端（由管理页操作）"],
       args_schema={"label": {"type": "string", "min_length": 1, "max_length": 80, "description": "客户端标签，默认tanyuan；标签不是身份凭证"},
@@ -54,9 +54,9 @@ def bili_pools(args):
     return _result("bili.pools", args, client, client.pools())
 
 
-@tool(name="bili.query", summary="按池和发布时间区间幂等提交查询，有限等待并读取服务结果",
+@tool(name="bili.query", summary="按发布时间查询已配置 Bilibili UP 的动态和已有字幕，可选择池内 UID",
       covers=["所选池内指定UP或全部UP的图文和已有字幕", "每次调用独立传入时间范围", "同键受理恢复", "有界正文和同版本续读"],
-      not_covers=["B站直接抓取或任意URL", "全站查全承诺", "视频媒体/ASR", "图片OCR", "后台自动唤醒agent"],
+      not_covers=["B站全站搜索或任意URL/池外UP", "自动同步平台关注列表", "全站查全承诺", "视频媒体/ASR", "图片OCR", "后台自动唤醒agent"],
       args_schema={"pool_id": {"type": "string", "required": True, "min_length": 1, "max_length": 64},
                    "source_uids": {"type": "array[string]", "min_items": 1, "max_items": 20,
                                    "description": "可选：从bili.pools中选择的UID；省略查整个池。只查某位UP时传其UID，不能扩大到池外。"},

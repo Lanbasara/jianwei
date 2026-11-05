@@ -268,6 +268,52 @@ class BiliClientTests(unittest.TestCase):
         self.invoke("bili.pair", {"resume": True, "wait_ms": 0})
         self.assertEqual(len([call for call in self.service.calls if call["path"] == "/api/auth/pair"]), 1)
 
+    def test_unrelated_quote_needs_no_bili_connection_or_credentials(self):
+        from tanyuan.tools import market
+        self.stack.enter_context(patch.object(cache, "_CONN", None))
+        self.stack.enter_context(patch.object(cache, "_LAST_PRUNE", 0.0))
+        self.stack.callback(lambda: cache._CONN.close() if cache._CONN is not None else None)
+        payload = {"quotes": {"600519": {"price": 100.0}}, "missing": [], "warnings": []}
+        with patch.object(config, "secret", side_effect=AssertionError("credentials read")), \
+                patch.object(bili, "_client", side_effect=AssertionError("bili client constructed")), \
+                patch.object(market, "fetch_quotes", return_value=payload):
+            status, result = self.invoke("market.quote", {"codes": ["600519"]})
+        self.assertEqual(status, 0, result)
+        self.assertEqual(result["data"]["quotes"]["600519"]["price"], 100.0)
+        self.assertNotIn("bili", json.dumps(result).lower())
+        self.assertEqual(self.service.calls, [])
+        self.assertFalse(self.state_file.exists())
+
+    def test_bilibili_login_required_preserves_pairing_without_poll_or_pair_suggestions(self):
+        self.approve()
+        saved = self.state_file.read_bytes()
+        self.service.query_state = "waiting_login"
+        before = len(self.service.calls)
+        status, result = self.invoke("bili.query", dict(self.query_args(), wait_ms=60000))
+        self.assertEqual(status, 0, result)
+        self.assertEqual(result["data"]["handle"]["id"], JOB)
+        self.assertFalse(result.get("next"))
+        warnings = result["provenance"]["warnings"]
+        self.assertEqual([w["type"] for w in warnings], ["waiting_login"])
+        self.assertIn("扫码", warnings[0]["message"])
+        self.assertNotIn("bili.pair", warnings[0]["message"])
+        self.assertEqual([c["path"] for c in self.service.calls[before:]], ["/api/v1/queries"])
+        self.assertEqual(self.state_file.read_bytes(), saved)
+        self.service.override = lambda *_: Service.error(401, "LOGIN_REQUIRED")
+        status, result = self.invoke("bili.get", {"id": JOB})
+        self.assertNotEqual(status, 0)
+        self.assertIn("扫码", result["error"]["hint"])
+        self.assertNotIn("bili.pair", result["error"]["hint"])
+        self.assertFalse(result["error"]["retryable"])
+        self.assertEqual(self.state_file.read_bytes(), saved)
+        self.service.override = None
+        self.service.complete = True
+        status, resumed = self.invoke("bili.get", {"id": JOB})
+        self.assertEqual(status, 0, resumed)
+        self.assertEqual(resumed["data"]["handle"]["id"], JOB)
+        self.assertEqual(resumed["data"]["read_state"], "read_complete")
+        self.assertEqual(self.state_file.read_bytes(), saved)
+
     def test_202_and_waiting_states_are_pending_observations_not_failures(self):
         self.approve()
         for state in ("queued", "waiting_login", "waiting_budget", "cooling_down"):

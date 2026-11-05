@@ -1,6 +1,6 @@
 ---
 name: tanyuan
-description: 投资研究取数与溯源（探源/ty CLI）。需要股票行情、基金/ETF净值与持仓、财报、公告、研报、新闻、宏观或行业数据，以及检索和读取原文证据时使用。提供数据、来源、日期和覆盖限制，供 agent 分析与写作。
+description: 投资研究取数与溯源（探源/ty CLI）。需要股票行情、基金/ETF净值与持仓、财报、公告、研报、新闻、宏观行业数据、原文证据，或用户配置的 Bilibili UP 动态与已有字幕时使用。提供数据、来源、日期和覆盖限制，供 agent 分析与写作。
 ---
 
 # 探源 Tanyuan
@@ -46,6 +46,6 @@ ty call <tool> --json '<参数对象>'
 - 新闻扫描的来源覆盖与源集：读 `references/news-layer.md`。
 - 新闻窗口内没找到材料、需要恢复历史证据：读 `references/news-recovery.md`。
 - 需要了解具体来源的限制：读 `references/source-matrix.md`，当前可用性以实际响应为准。
-- 用户配置的 Bilibili UP 动态或已有字幕：读 `references/bili-source.md`；按当前任务选择 UP 和时间，不要求用户预先在管理页设置查询区间。
+- 当前问题需要用户配置的 Bilibili UP 动态或已有字幕：读 `references/bili-source.md`。
 
 这些文档提供研究方法；工具名称、参数、错误语义和可执行示例由 CLI 维护。不会因查询成功就自动获得投资结论，也不能将当前版本数据当成严格的历史时点数据库。
