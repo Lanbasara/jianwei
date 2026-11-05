@@ -46,5 +46,6 @@ ty call <tool> --json '<参数对象>'
 - 新闻扫描的来源覆盖与源集：读 `references/news-layer.md`。
 - 新闻窗口内没找到材料、需要恢复历史证据：读 `references/news-recovery.md`。
 - 需要了解具体来源的限制：读 `references/source-matrix.md`，当前可用性以实际响应为准。
+- 用户配置的 Bilibili UP 动态或已有字幕：读 `references/bili-source.md`；按当前任务选择 UP 和时间，不要求用户预先在管理页设置查询区间。
 
 这些文档提供研究方法；工具名称、参数、错误语义和可执行示例由 CLI 维护。不会因查询成功就自动获得投资结论，也不能将当前版本数据当成严格的历史时点数据库。

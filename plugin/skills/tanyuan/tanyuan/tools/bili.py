@@ -1,5 +1,5 @@
 """Declarative bili-source tools. Credentials, acquisition and caches stay outside args."""
-from ..bili_source import BiliSourceClient, MAX_DELIVERY_BYTES, _encoded, result_for, validate_get_args
+from ..bili_source import BiliSourceClient, MAX_DELIVERY_BYTES, _encoded, result_for, validate_get_args, validate_query_sources
 from ..envelope import success
 from ..errors import Code, TanyuanError
 from ..registry import tool
@@ -55,16 +55,18 @@ def bili_pools(args):
 
 
 @tool(name="bili.query", summary="按池和发布时间区间幂等提交查询，有限等待并读取服务结果",
-      covers=["所选池的图文和已有字幕", "同键受理恢复", "有界正文和同版本续读"],
+      covers=["所选池内指定UP或全部UP的图文和已有字幕", "每次调用独立传入时间范围", "同键受理恢复", "有界正文和同版本续读"],
       not_covers=["B站直接抓取或任意URL", "全站查全承诺", "视频媒体/ASR", "图片OCR", "后台自动唤醒agent"],
       args_schema={"pool_id": {"type": "string", "required": True, "min_length": 1, "max_length": 64},
+                   "source_uids": {"type": "array[string]", "min_items": 1, "max_items": 20,
+                                   "description": "可选：从bili.pools中选择的UID；省略查整个池。只查某位UP时传其UID，不能扩大到池外。"},
                    "idempotency_key": {"type": "string", "required": True, "min_length": 8, "max_length": 128,
                                        "description": "先保留稳定key；同次重试原样使用，不改成新任务"},
                    "last_days": {"type": "integer", "min": 1, "max": 90},
                    "from": {"type": "string", "max_length": 40, "description": "带时区ISO发布时间下界（含），与until同用"},
                    "until": {"type": "string", "max_length": 40, "description": "带时区ISO发布时间上界（不含），与from同用"}, "wait_ms": _WAIT},
       arg_groups=[{"keys": ["last_days", "from"], "min": 1, "max": 1}, {"keys": ["last_days", "until"], "min": 1, "max": 1}],
-      returns=_RETURNS, source="bili-source", grade="L3", cache_ttl_s=0, cost="service API; upstream budget owned by service", errors=_ERRORS,
+      returns=_RETURNS, source="bili-source", grade="L3", cache_ttl_s=0, cost="service API; upstream budget owned by service", errors=_ERRORS, validate=validate_query_sources,
       examples=[{"args": {"pool_id": "default", "last_days": 7, "idempotency_key": "research-window-001", "wait_ms": 20000}}])
 def bili_query(args):
     client = _client()

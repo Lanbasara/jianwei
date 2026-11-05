@@ -210,6 +210,36 @@ class BiliClientTests(unittest.TestCase):
     def query_args():
         return {"pool_id": "default", "idempotency_key": "synthetic-stable-key", "last_days": 2, "wait_ms": 0}
 
+    def test_selected_up_is_sent_with_interval_and_preserved_on_retry(self):
+        self.approve()
+        self.service.drop_acceptance_once = True
+        status, result = self.invoke("bili.query", dict(self.query_args(), source_uids=["123"]))
+        self.assertEqual(status, 0, result)
+        calls = [c["request"] for c in self.service.calls if c["path"] == "/api/v1/queries"]
+        self.assertEqual(len(calls), 2)
+        self.assertEqual(calls[0], calls[1])
+        self.assertEqual(calls[0]["source_uids"], ["123"])
+        self.assertEqual(calls[0]["interval"], {"last_days": 2})
+        self.assertEqual(result["data"]["query"]["pool"]["sources"][0]["uid"], "123")
+
+    def test_selected_up_cannot_be_silently_changed_by_service(self):
+        self.approve()
+        status, result = self.invoke("bili.query", dict(self.query_args(), source_uids=["456"]))
+        self.assertNotEqual(status, 0)
+        self.assertEqual(result["error"]["code"], "SOURCE_SCHEMA_CHANGED")
+
+    def test_invalid_selected_uids_fail_before_state_or_sensitive_logging(self):
+        sentinel = "private-invalid-selector-sentinel"
+        for selected in [[], ["123", "123"], [sentinel], ["0"], ["１"], ["1" * 21]]:
+            with self.subTest(selected=selected), patch.object(bili, "_client", side_effect=AssertionError("state read")):
+                status, result = self.invoke("bili.query", dict(self.query_args(), source_uids=selected))
+                self.assertNotEqual(status, 0)
+                self.assertNotIn(sentinel, json.dumps(result))
+        self.assertEqual(self.service.calls, [])
+        usage = self.base / "usage.jsonl"
+        if usage.exists():
+            self.assertNotIn(sentinel, usage.read_text())
+
     def test_discovery_is_offline_and_never_reads_credentials(self):
         with patch.object(config, "secret", side_effect=AssertionError("credentials read")), \
                 patch.object(bili, "_client", side_effect=AssertionError("client constructed")):
@@ -431,7 +461,7 @@ class BiliClientTests(unittest.TestCase):
 
     def test_source_errors_keep_distinct_existing_taxonomy(self):
         self.approve()
-        cases = [(403, "POOL_DENIED", "BLOCKED"), (404, "JOB_NOT_FOUND", "NOT_FOUND"),
+        cases = [(403, "POOL_DENIED", "BLOCKED"), (403, "SOURCE_DENIED", "BLOCKED"), (400, "EMPTY_POOL", "BAD_ARGUMENT"), (404, "JOB_NOT_FOUND", "NOT_FOUND"),
                  (409, "RESULT_VERSION", "BAD_ARGUMENT"), (429, "CAPACITY", "QUOTA_EXCEEDED")]
         for status, service_code, expected in cases:
             self.service.override = lambda *_, s=status, c=service_code: Service.error(s, c)

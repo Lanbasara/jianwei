@@ -49,9 +49,9 @@ def _error(code: str, handle: dict | None = None) -> TanyuanError:
         "CLIENT_CONFIG": Code.AUTH_FAILED, "CLIENT_STATE": Code.AUTH_FAILED, "CLIENT_NOT_PAIRED": Code.AUTH_FAILED,
         "CLIENT_ORIGIN": Code.AUTH_FAILED, "CLIENT_STATE_EXISTS": Code.AUTH_FAILED,
         "AUTH_CLIENT": Code.AUTH_FAILED, "AUTH_PAIR": Code.AUTH_FAILED, "LOGIN_REQUIRED": Code.AUTH_FAILED,
-        "POOL_DENIED": Code.BLOCKED, "CLIENT_REDIRECT": Code.BLOCKED,
+        "POOL_DENIED": Code.BLOCKED, "SOURCE_DENIED": Code.BLOCKED, "CLIENT_REDIRECT": Code.BLOCKED,
         "JOB_NOT_FOUND": Code.NOT_FOUND, "POOL_NOT_FOUND": Code.NOT_FOUND,
-        "INPUT": Code.BAD_ARGUMENT, "INTERVAL": Code.BAD_ARGUMENT, "IDEMPOTENCY_CONFLICT": Code.BAD_ARGUMENT,
+        "INPUT": Code.BAD_ARGUMENT, "INTERVAL": Code.BAD_ARGUMENT, "EMPTY_POOL": Code.BAD_ARGUMENT, "IDEMPOTENCY_CONFLICT": Code.BAD_ARGUMENT,
         "RESULT_VERSION": Code.BAD_ARGUMENT, "CLIENT_CURSOR": Code.BAD_ARGUMENT, "CONTENT_OFFSET": Code.BAD_ARGUMENT,
         "PAIR_POLL_RATE": Code.RATE_LIMITED, "PAIR_RATE_LIMIT": Code.RATE_LIMITED, "HTTP_429": Code.RATE_LIMITED,
         "CAPACITY": Code.QUOTA_EXCEEDED, "PAIR_CAPACITY": Code.QUOTA_EXCEEDED, "CLIENT_DELIVERY_LIMIT": Code.QUOTA_EXCEEDED,
@@ -466,6 +466,17 @@ def _fits(data: dict, tool: str, args: dict, *, reserve: int = 4096) -> bool:
     return max(len(_encoded(envelope)), len(_encoded(envelope, pretty=True))) + reserve <= MAX_DELIVERY_BYTES
 
 
+def validate_query_sources(args: dict) -> None:
+    """Validate selectors before CLI output/usage logging, without reading state."""
+    if "source_uids" not in args:
+        return
+    value = args["source_uids"]
+    if (not isinstance(value, list) or not 1 <= len(value) <= 20
+            or any(not isinstance(uid, str) or not re.fullmatch(r"[1-9][0-9]{0,19}", uid) for uid in value)
+            or len(set(value)) != len(value)):
+        raise bad_arg("source_uids 必须是 1–20 个不重复的数字 UID。")
+
+
 def validate_get_args(args: dict) -> None:
     if not isinstance(args, dict) or set(args) - {"id", "cursor", "wait_ms"} or not _uuid(args.get("id")) or not _integer(args.get("wait_ms", 20000), 0, 60000):
         raise bad_arg("get 需要有效 id、原 cursor 和 0–60000 的 wait_ms。")
@@ -517,7 +528,7 @@ class BiliSourceClient:
                 _require(isinstance(value, dict))
                 if not 200 <= status < 300:
                     code = value.get("error", {}).get("code") if isinstance(value.get("error"), dict) else None
-                    known = {"AUTH_CLIENT", "AUTH_PAIR", "LOGIN_REQUIRED", "POOL_DENIED", "POOL_NOT_FOUND", "JOB_NOT_FOUND", "RESULT_EXPIRED",
+                    known = {"AUTH_CLIENT", "AUTH_PAIR", "LOGIN_REQUIRED", "POOL_DENIED", "SOURCE_DENIED", "EMPTY_POOL", "POOL_NOT_FOUND", "JOB_NOT_FOUND", "RESULT_EXPIRED",
                              "RESULT_PENDING", "RESULT_VERSION", "CONTENT_UNAVAILABLE", "CONTENT_OFFSET", "INPUT", "INTERVAL", "IDEMPOTENCY_CONFLICT",
                              "CAPACITY", "PAIR_CAPACITY", "PAIR_POLL_RATE", "PAIR_RATE_LIMIT", "CONTRACT"}
                     raise _error(code if isinstance(code, str) and code in known else "HTTP_429" if status == 429 else "CLIENT_SERVICE_ERROR")
@@ -598,12 +609,13 @@ class BiliSourceClient:
         return result
 
     def query(self, args: dict):
-        allowed = {"pool_id", "idempotency_key", "last_days", "from", "until", "wait_ms"}
+        allowed = {"pool_id", "idempotency_key", "last_days", "from", "until", "wait_ms", "source_uids"}
         if (not isinstance(args, dict) or set(args) - allowed or not isinstance(args.get("pool_id"), str)
                 or not _POOL.fullmatch(args["pool_id"]) or not isinstance(args.get("idempotency_key"), str)
                 or not re.fullmatch(r"[a-zA-Z0-9_-]{8,128}", args["idempotency_key"])):
             raise bad_arg("查询需要有效 pool_id 和稳定 idempotency_key。")
         wait = args.get("wait_ms", 20000)
+        validate_query_sources(args)
         if not _integer(wait, 0, 60000):
             raise bad_arg("wait_ms 必须是 0–60000 的整数。")
         if "last_days" in args:
@@ -617,10 +629,14 @@ class BiliSourceClient:
         self.requests = 0
         handle = {"id": None, "idempotency_key": args["idempotency_key"]}
         try:
-            reply = self._request("/api/v1/queries", {"pool_id": args["pool_id"], "interval": interval,
-                                  "idempotency_key": args["idempotency_key"]}, retry=True)
+            request = {"pool_id": args["pool_id"], "interval": interval, "idempotency_key": args["idempotency_key"]}
+            if "source_uids" in args:
+                request["source_uids"] = args["source_uids"]
+            reply = self._request("/api/v1/queries", request, retry=True)
             query = _view(reply.get("query"))
             _require(query["pool"]["id"] == args["pool_id"])
+            if "source_uids" in args:
+                _require({source["uid"] for source in query["pool"]["sources"]} == set(args["source_uids"]))
             handle["id"] = query["id"]
             return self._deliver(query, handle, wait, "bili.query", args)
         except TanyuanError as error:
