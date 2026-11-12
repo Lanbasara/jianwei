@@ -8,8 +8,10 @@
 - Clarify RSS time filters and unify incomplete-result recovery: configured
   DeepSeek/Tavily search can supplement direct sources, with explicit provider
   choice and proportionate stopping when reliable evidence remains unavailable.
-- Support open-ended opportunity discovery within research and replace fixed
-  tool sequences with optional examples, keeping interface definitions in CLI help.
+- Add independent `discover` for opportunity finding and candidate screening;
+  preserve research's focus on defined questions, with collaboration as needed.
+- Replace fixed tool sequences with optional examples, keeping interface
+  definitions in CLI help.
 - Bundle Tanyuan 0.7.0. Installation, shared runtime and workspace layout are
   unchanged; no migration is required.
 
