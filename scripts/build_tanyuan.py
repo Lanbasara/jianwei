@@ -14,7 +14,7 @@ import tempfile
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "tanyuan"
 # Explicit additions are reviewed here; never copy the repository recursively.
-MODULES = """__init__ bili_source blobs cache cli config envelope errors garden http interface registry tools/bili
+MODULES = """__init__ bili_source blobs cache cli config envelope errors garden http interface presentation registry tools/bili
 downloads dns_worker documents pdf_worker fund_sources fund_data fund_metrics tools/fund
 searchapi source_sets tushare util tools/__init__ tools/capital tools/entity
 tools/events tools/filing tools/fundamental tools/global_ tools/history

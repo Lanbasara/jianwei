@@ -17,6 +17,7 @@ Capability decisions:
 
 - [Independent investment explanation](../docs/adr/0001-investment-explain.md).
 - [Opt-in analysis and explanation workflows](../docs/adr/0002-analysis-then-explain.md).
+- [Evidence reading views and open research](../docs/adr/0003-evidence-views-and-open-research.md).
 
 ### Shared runtime
 
