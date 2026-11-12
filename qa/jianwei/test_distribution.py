@@ -52,7 +52,9 @@ class Distribution(unittest.TestCase):
             if relative == "skills/tanyuan/bin/ty":
                 path = path.with_name("ty-upstream")
             self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(), digest)
-        for name in ("setup", "research", "portfolio", "advise", "reflect", "explain", "report", "research-then-report"):
+        for name in ("setup", "research", "portfolio", "advise", "reflect", "explain", "report",
+                     "research-then-report", "research-then-explain",
+                     "advise-then-explain", "reflect-then-explain"):
             self.assertEqual((self.bundle / f"skills/{name}/SKILL.md").read_bytes(),
                              (ROOT / f"jianwei/skills/{name}/SKILL.md").read_bytes())
         self.assertEqual((self.bundle / "references/portfolio-snapshot.md").read_bytes(),
@@ -101,14 +103,23 @@ class Distribution(unittest.TestCase):
         self.assertNotIn("unlisted.txt", package["files"])
         self.assertFalse((bundle / "unlisted.txt").exists())
 
-    def test_research_then_report_references_skills_in_order(self):
-        workflow = ROOT / "jianwei/skills/research-then-report/SKILL.md"
-        content = workflow.read_text(encoding="utf-8")
-        research_link = "[research](../research/SKILL.md)"
-        report_link = "[report](../report/SKILL.md)"
-        self.assertLess(content.index(research_link), content.index(report_link))
-        for relative in ("../research/SKILL.md", "../report/SKILL.md"):
-            self.assertTrue((workflow.parent / relative).resolve().is_file())
+    def test_composed_workflows_reference_skills_in_order(self):
+        workflows = (
+            ("research-then-report", "research", "report"),
+            ("research-then-explain", "research", "explain"),
+            ("advise-then-explain", "advise", "explain"),
+            ("reflect-then-explain", "reflect", "explain"),
+        )
+        for root in (ROOT / "jianwei", self.bundle):
+            for name, analysis, presentation in workflows:
+                with self.subTest(root=root, workflow=name):
+                    workflow = root / f"skills/{name}/SKILL.md"
+                    content = workflow.read_text(encoding="utf-8")
+                    analysis_link = f"[{analysis}](../{analysis}/SKILL.md)"
+                    presentation_link = f"[{presentation}](../{presentation}/SKILL.md)"
+                    self.assertLess(content.index(analysis_link), content.index(presentation_link))
+                    for target in (analysis, presentation):
+                        self.assertTrue((workflow.parent / f"../{target}/SKILL.md").resolve().is_file())
 
     def test_distribution_paths_reject_escape_and_links(self):
         with self.assertRaises(ValueError):

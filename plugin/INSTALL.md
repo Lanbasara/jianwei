@@ -2,7 +2,7 @@
 
 以下安装命令固定到 0.3.2；技能说明与自行验收面向当前源码，新增能力不代表已随该版本发布，可用技能以安装副本为准。
 
-当前源码含 setup、tanyuan、research、portfolio、advise、reflect、explain、report 与 research-then-report。不需要另装 tanyuan，也不需要克隆 huoguang。
+当前源码含 setup、tanyuan、research、portfolio、advise、reflect、explain、report，以及 research-then-report、research-then-explain、advise-then-explain、reflect-then-explain 组合。不需要另装 tanyuan，也不需要克隆 huoguang。
 
 ## Claude Code
 
@@ -14,7 +14,7 @@ claude plugin install jianwei@jianwei --scope user
 claude plugin list
 ```
 
-在任意任务目录启动新会话。技能为 `/jianwei:setup`、`/jianwei:tanyuan`、`/jianwei:research`、`/jianwei:portfolio`、`/jianwei:advise`、`/jianwei:reflect`、`/jianwei:explain`、`/jianwei:report`、`/jianwei:research-then-report`。已有会话按宿主提示重新加载或新开会话。用户级安装在本机各项目可用，项目设置仍可覆盖是否启用。
+在任意任务目录启动新会话。技能为 `/jianwei:setup`、`/jianwei:tanyuan`、`/jianwei:research`、`/jianwei:portfolio`、`/jianwei:advise`、`/jianwei:reflect`、`/jianwei:explain`、`/jianwei:report`、`/jianwei:research-then-report`、`/jianwei:research-then-explain`、`/jianwei:advise-then-explain`、`/jianwei:reflect-then-explain`。已有会话按宿主提示重新加载或新开会话。用户级安装在本机各项目可用，项目设置仍可覆盖是否启用。
 
 ## Codex
 
@@ -53,7 +53,7 @@ dsh web
 
 若 shell 没有 `dsh` 但装了 Desktop，使用应用内插件管理。不要重置已有 profile；CLI 与 Desktop 的 profile 不是可以随意互换的名称。
 
-技能名是 **`jianwei-setup`**、**`jianwei-tanyuan`**、**`jianwei-research`**、**`jianwei-portfolio`**、**`jianwei-advise`**、**`jianwei-reflect`**、**`jianwei-explain`**、**`jianwei-report`**、**`jianwei-research-then-report`**，可从技能入口选择或直接要求 agent 使用。包只注册技能，不更换模型、agent preset、多 agent 工具或权限。接口以 DSH **0.2.1-rc.3** 核查；其他 profile 需分别安装。
+技能名是 **`jianwei-setup`**、**`jianwei-tanyuan`**、**`jianwei-research`**、**`jianwei-portfolio`**、**`jianwei-advise`**、**`jianwei-reflect`**、**`jianwei-explain`**、**`jianwei-report`**、**`jianwei-research-then-report`**、**`jianwei-research-then-explain`**、**`jianwei-advise-then-explain`**、**`jianwei-reflect-then-explain`**，可从技能入口选择或直接要求 agent 使用。包只注册技能，不更换模型、agent preset、多 agent 工具或权限。接口以 DSH **0.2.1-rc.3** 核查；其他 profile 需分别安装。
 
 Git 包包含准备好的 ESM 注册文件，没有 prepare/postinstall 或 npm 构建步骤。Python 依赖在下面的显式初始化中准备。
 
@@ -96,6 +96,8 @@ python3 "/absolute/path/to/installed/jianwei/scripts/setup.py" \
 8. **复盘**：分别从外部市场材料和已有投资经历提出问题，检查 reflect 能否解释关键变化、区分当时依据与后来发展，并说明发现的具体意义。正式分析保存为 case，同一任务的补充沿用成果；历史原稿保持可追查，局部材料不被扩成完整行为或业绩，个案发现不自动写入默认加载的经验规则。
 9. **已有成果成稿**：分别指定已有研究、组合分析和含条件的投资建议交给 report，检查 HTML 是否独立可读、帮助理解，同时保留各自的性质、判断强度、条件与来源。建议没有被写成用户决定，组合分析没有被擅自补成推荐；原始成果保留，成稿可从对应记录找到。写作质量需实际阅读和查看页面，离线契约不证明可读性或忠实程度。
 10. **分析结果讲解**：在 research、advise、reflect 等已经形成分析结果后，由 explain 承接最终讲解，也可针对已有分析追问。检查能否直接使用本次上下文而不要求另交材料，是否讲清了判断、关系与取舍，保留判断强度、条件和来源，没有新增投资判断。简单问题可只用文字；需要图形时，纯文本或未渲染的环境也应能理解核心意思。是否更易懂由读者实际判断。
+
+11. **分析后讲解组合**：分别使用 research-then-explain、advise-then-explain、reflect-then-explain，检查原能力先达到自身完成条件，再将用户语境、完整分析结果与必要依据交给通用子智能体执行 explain。主智能体直接交付，用户无需再发一次讲解请求；原技能仍可单独使用，已有分析无需重跑。离线引用检查不证明模型实际执行了串联。
 
 示例：
 

@@ -16,7 +16,10 @@
     "reflect",
     "explain",
     "report",
-    "research-then-report"
+    "research-then-report",
+    "research-then-explain",
+    "advise-then-explain",
+    "reflect-then-explain"
   ],
   "common_files": {
     "README.md": "README.md",
@@ -30,7 +33,10 @@
     "skills/reflect/SKILL.md": "skills/reflect/SKILL.md",
     "skills/explain/SKILL.md": "skills/explain/SKILL.md",
     "skills/report/SKILL.md": "skills/report/SKILL.md",
-    "skills/research-then-report/SKILL.md": "skills/research-then-report/SKILL.md"
+    "skills/research-then-report/SKILL.md": "skills/research-then-report/SKILL.md",
+    "skills/research-then-explain/SKILL.md": "skills/research-then-explain/SKILL.md",
+    "skills/advise-then-explain/SKILL.md": "skills/advise-then-explain/SKILL.md",
+    "skills/reflect-then-explain/SKILL.md": "skills/reflect-then-explain/SKILL.md"
   },
   "runtime_files": {
     "runtime/runtime.py": "scripts/runtime.py",
