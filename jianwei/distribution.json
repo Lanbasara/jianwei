@@ -1,7 +1,7 @@
 {
   "identity": {
     "name": "jianwei",
-    "description": "见微：探源数据、专业投资研究、组合分析、投资建议、复盘与 HTML 成稿 skills，使用宿主原生多 agent。",
+    "description": "见微：探源数据、专业投资研究、组合分析、投资建议、复盘、投资讲解与 HTML 成稿 skills，使用宿主原生多 agent。",
     "author": {
       "name": "Lanbasara"
     },
@@ -14,8 +14,12 @@
     "portfolio",
     "advise",
     "reflect",
+    "explain",
     "report",
-    "research-then-report"
+    "research-then-report",
+    "research-then-explain",
+    "advise-then-explain",
+    "reflect-then-explain"
   ],
   "common_files": {
     "README.md": "README.md",
@@ -27,8 +31,12 @@
     "skills/portfolio/SKILL.md": "skills/portfolio/SKILL.md",
     "skills/advise/SKILL.md": "skills/advise/SKILL.md",
     "skills/reflect/SKILL.md": "skills/reflect/SKILL.md",
+    "skills/explain/SKILL.md": "skills/explain/SKILL.md",
     "skills/report/SKILL.md": "skills/report/SKILL.md",
-    "skills/research-then-report/SKILL.md": "skills/research-then-report/SKILL.md"
+    "skills/research-then-report/SKILL.md": "skills/research-then-report/SKILL.md",
+    "skills/research-then-explain/SKILL.md": "skills/research-then-explain/SKILL.md",
+    "skills/advise-then-explain/SKILL.md": "skills/advise-then-explain/SKILL.md",
+    "skills/reflect-then-explain/SKILL.md": "skills/reflect-then-explain/SKILL.md"
   },
   "runtime_files": {
     "runtime/runtime.py": "scripts/runtime.py",

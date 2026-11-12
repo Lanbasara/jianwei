@@ -15,8 +15,12 @@ assert.deepEqual(definitions.map(d => d.name), [
   'jianwei-portfolio',
   'jianwei-advise',
   'jianwei-reflect',
+  'jianwei-explain',
   'jianwei-report',
   'jianwei-research-then-report',
+  'jianwei-research-then-explain',
+  'jianwei-advise-then-explain',
+  'jianwei-reflect-then-explain',
 ]);
 for (const definition of definitions) {
   const source = readFileSync(definition.path, 'utf8');
