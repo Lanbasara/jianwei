@@ -1,12 +1,12 @@
 # Jianwei 安装与自行验收
 
-以下安装命令固定到 0.3.2；技能说明与自行验收面向当前源码，新增能力不代表已随该版本发布，可用技能以安装副本为准。
+本说明对应 Jianwei **0.4.0**。版本正式发布并进入市场后，可按以下方式安装；可用技能以实际安装副本为准。
 
 当前源码含 setup、tanyuan、research、portfolio、advise、reflect、explain、report，以及 research-then-report、research-then-explain、advise-then-explain、reflect-then-explain 组合。不需要另装 tanyuan，也不需要克隆 huoguang。
 
 ## Claude Code
 
-以下命令须等 `jianwei-marketplace` 中的 Jianwei 条目发布 0.3.2 后使用：
+以下命令须等 `jianwei-marketplace` 中的 Jianwei 条目发布 0.4.0 后使用：
 
 ```bash
 claude plugin marketplace add Lanbasara/jianwei-marketplace
@@ -18,7 +18,7 @@ claude plugin list
 
 ## Codex
 
-以下命令须等 `jianwei-marketplace` 中的 Jianwei 条目发布 0.3.2 后使用：
+以下命令须等 `jianwei-marketplace` 中的 Jianwei 条目发布 0.4.0 后使用：
 
 ```bash
 codex plugin marketplace add Lanbasara/jianwei-marketplace
@@ -40,14 +40,14 @@ CLI 语法针对本机 **0.163.0-alpha.11.2** 的帮助核对。若旧版没有 
 https://raw.githubusercontent.com/Lanbasara/jianwei-marketplace/main/dsh/index.json
 ```
 
-等市场中的 Jianwei 条目发布 0.3.2 后，在见微市场中选择 `jianwei`，确认版本并安装、启用，按宿主提示重载或重启。然后在同一 profile 的任意工作目录新建任务。若没有「发现」页，先在实验性插件中启用自定义插件市场；`v0.3.2` tag 发布后，也可通过「添加插件」直接输入 `git+https://github.com/Lanbasara/jianwei.git#v0.3.2&path:/plugin`。
+等市场中的 Jianwei 条目发布 0.4.0 后，在见微市场中选择 `jianwei`，确认版本并安装、启用，按宿主提示重载或重启。然后在同一 profile 的任意工作目录新建任务。若没有「发现」页，先在实验性插件中启用自定义插件市场；`v0.4.0` tag 发布后，也可通过「添加插件」直接输入 `git+https://github.com/Lanbasara/jianwei.git#v0.4.0&path:/plugin`。
 
 此地址是 DSH 原生 format 1 市场索引，不是 npm registry，也不是 GitHub 仓库页面。索引把版本映射到固定 Git commit，由 DSH 生成安装地址。当前未发布 npm 包，请勿输入裸包名 `jianwei` 从 npm 安装。
 
 **CLI**：使用你实际运行的 profile，下面以 `web` 为例：
 
 ```bash
-dsh plugin --profile web add 'git+https://github.com/Lanbasara/jianwei.git#v0.3.2&path:/plugin'
+dsh plugin --profile web add 'git+https://github.com/Lanbasara/jianwei.git#v0.4.0&path:/plugin'
 dsh web
 ```
 
@@ -57,7 +57,7 @@ dsh web
 
 Git 包包含准备好的 ESM 注册文件，没有 prepare/postinstall 或 npm 构建步骤。Python 依赖在下面的显式初始化中准备。
 
-包声明 DSH 范围 `>=0.2.1-rc.3 <0.3.0`。当前 candidate 仅通过本地 DSH registration contract；正式发布前必须再以 0.2.1-rc.3 的市场校验器验证索引与 `plugin/` 子目录安装目标，并完成真实安装验收。范围内其他版本未逐个实测，不代表全版本验收。
+包声明 DSH 范围 `>=0.2.1-rc.3 <0.3.0`。离线构建检查技能注册与包内资源完整性；发布时另用官方市场校验器核对索引与 `plugin/` 子目录目标。校验通过不等于已在范围内全部宿主版本完成真实安装、会话或模型验收；具体执行范围见该版本发布记录。
 
 ## 当前安装副本的首次配置
 
