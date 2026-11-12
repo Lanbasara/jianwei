@@ -244,7 +244,7 @@ class Distribution(unittest.TestCase):
         for cwd in [self.work, other]:
             result = self.run_cli(["--version"], cwd=cwd)
             self.assertEqual(result.returncode, 0, result.stderr)
-            self.assertIn("0.5.0", result.stdout)
+            self.assertIn("0.6.0", result.stdout)
         result = self.run_cli(["tools"])
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertFalse(list(self.bundle.rglob("__pycache__")))
