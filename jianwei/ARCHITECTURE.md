@@ -13,6 +13,8 @@ maintained in the workspace sibling `tanyuan/` tree and is assembled as
 `skills/tanyuan/` by `scripts/build_jianwei.py`. The assembled skill frontmatter
 is the source for generated host catalogs.
 
+Capability decisions: [independent investment explanation](../docs/adr/0001-investment-explain.md).
+
 ### Shared runtime
 
 `runtime/` contains setup and launch behavior used identically by every host.
@@ -52,7 +54,7 @@ package.json
 cordis.patch.yml
 host/{dsh.mjs,catalog.json}
 scripts/{setup.py,runtime.py}
-skills/{setup,tanyuan,research,portfolio,advise,reflect,report,research-then-report}
+skills/{setup,tanyuan,research,portfolio,advise,reflect,explain,report,research-then-report}
 references/portfolio-snapshot.md
 ```
 

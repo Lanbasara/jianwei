@@ -1,6 +1,8 @@
-# Jianwei 0.3.2 安装与自行验收
+# Jianwei 安装与自行验收
 
-当前含 setup、tanyuan、research、portfolio、advise、reflect、report 与 research-then-report。不需要另装 tanyuan，也不需要克隆 huoguang。
+以下安装命令固定到 0.3.2；技能说明与自行验收面向当前源码，新增能力不代表已随该版本发布，可用技能以安装副本为准。
+
+当前源码含 setup、tanyuan、research、portfolio、advise、reflect、explain、report 与 research-then-report。不需要另装 tanyuan，也不需要克隆 huoguang。
 
 ## Claude Code
 
@@ -12,7 +14,7 @@ claude plugin install jianwei@jianwei --scope user
 claude plugin list
 ```
 
-在任意任务目录启动新会话。技能为 `/jianwei:setup`、`/jianwei:tanyuan`、`/jianwei:research`、`/jianwei:portfolio`、`/jianwei:advise`、`/jianwei:reflect`、`/jianwei:report`、`/jianwei:research-then-report`。已有会话按宿主提示重新加载或新开会话。用户级安装在本机各项目可用，项目设置仍可覆盖是否启用。
+在任意任务目录启动新会话。技能为 `/jianwei:setup`、`/jianwei:tanyuan`、`/jianwei:research`、`/jianwei:portfolio`、`/jianwei:advise`、`/jianwei:reflect`、`/jianwei:explain`、`/jianwei:report`、`/jianwei:research-then-report`。已有会话按宿主提示重新加载或新开会话。用户级安装在本机各项目可用，项目设置仍可覆盖是否启用。
 
 ## Codex
 
@@ -51,7 +53,7 @@ dsh web
 
 若 shell 没有 `dsh` 但装了 Desktop，使用应用内插件管理。不要重置已有 profile；CLI 与 Desktop 的 profile 不是可以随意互换的名称。
 
-技能名是 **`jianwei-setup`**、**`jianwei-tanyuan`**、**`jianwei-research`**、**`jianwei-portfolio`**、**`jianwei-advise`**、**`jianwei-reflect`**、**`jianwei-report`**、**`jianwei-research-then-report`**，可从技能入口选择或直接要求 agent 使用。包只注册技能，不更换模型、agent preset、多 agent 工具或权限。接口以 DSH **0.2.1-rc.3** 核查；其他 profile 需分别安装。
+技能名是 **`jianwei-setup`**、**`jianwei-tanyuan`**、**`jianwei-research`**、**`jianwei-portfolio`**、**`jianwei-advise`**、**`jianwei-reflect`**、**`jianwei-explain`**、**`jianwei-report`**、**`jianwei-research-then-report`**，可从技能入口选择或直接要求 agent 使用。包只注册技能，不更换模型、agent preset、多 agent 工具或权限。接口以 DSH **0.2.1-rc.3** 核查；其他 profile 需分别安装。
 
 Git 包包含准备好的 ESM 注册文件，没有 prepare/postinstall 或 npm 构建步骤。Python 依赖在下面的显式初始化中准备。
 
@@ -84,7 +86,7 @@ python3 "/absolute/path/to/installed/jianwei/scripts/setup.py" \
 
 选择开发仓之外的空目录，再选择另一个已有工作目录，各开一次新任务。
 
-1. **发现与运行**：八项技能可见；setup 能解释当前状态，`ty --version` 返回 tanyuan 版本，`ty tools` 能列出能力；第二个任务目录不再安装依赖。
+1. **发现与运行**：可见技能与当前交付清单一致；setup 能解释当前状态，`ty --version` 返回 tanyuan 版本，`ty tools` 能列出能力；第二个任务目录不再安装依赖。
 2. **取数**：用已配置服务完成熟悉的小查询，检查标的、时间、单位和来源；缺权限或服务失败应明确报告。
 3. **研究与协作**：给出值得分工的问题，要求宿主原生子 agent 调查，另一个未承担原论证的 agent 复核关键结论。检查实际执行记录及有出处的自然语言底稿，不只看最终文字宣称“已复核”。
 4. **研报衔接**：要求研究并生成 HTML 研报，确认 agent 选择 research-then-report，先完整执行 research，再委派通用子智能体执行 report 并接收成稿；生成的 HTML 可以独立打开。
@@ -93,6 +95,7 @@ python3 "/absolute/path/to/installed/jianwei/scripts/setup.py" \
 7. **组合分析**：分别提供实际持仓与假设方案，检查 portfolio 能否解释底层重叠、共同收益与风险来源，并在一致口径下比较调整影响。以局部更新接续旧快照，确认沿用信息保留原时点、未知仍为未知，假设方案没有变成用户实际持仓。结论应回答组合问题，并可供 advise 复用。
 8. **复盘**：分别从外部市场材料和已有投资经历提出问题，检查 reflect 能否解释关键变化、区分当时依据与后来发展，并说明发现的具体意义。正式分析保存为 case，同一任务的补充沿用成果；历史原稿保持可追查，局部材料不被扩成完整行为或业绩，个案发现不自动写入默认加载的经验规则。
 9. **已有成果成稿**：分别指定已有研究、组合分析和含条件的投资建议交给 report，检查 HTML 是否独立可读、帮助理解，同时保留各自的性质、判断强度、条件与来源。建议没有被写成用户决定，组合分析没有被擅自补成推荐；原始成果保留，成稿可从对应记录找到。写作质量需实际阅读和查看页面，离线契约不证明可读性或忠实程度。
+10. **已有成果讲解**：针对已有成果中的具体理解困难使用 explain，检查是否讲清了关系与取舍，保留判断强度、条件和来源，没有新增投资判断。简单问题可只用文字；需要图形时，纯文本或未渲染的环境也应能理解核心意思。是否更易懂由读者实际判断。
 
 示例：
 

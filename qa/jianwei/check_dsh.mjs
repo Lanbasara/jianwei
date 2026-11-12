@@ -15,6 +15,7 @@ assert.deepEqual(definitions.map(d => d.name), [
   'jianwei-portfolio',
   'jianwei-advise',
   'jianwei-reflect',
+  'jianwei-explain',
   'jianwei-report',
   'jianwei-research-then-report',
 ]);
