@@ -209,6 +209,15 @@ class CliTests(unittest.TestCase):
         with patch.object(cli, '_doctor', return_value={'ok': False, 'checks': []}):
             self.assertNotEqual(self.invoke(['doctor'])[0], 0)
 
+    def test_capabilities_offline_never_reveals_credentials(self):
+        with patch.object(config, 'secret', side_effect=lambda name: 'secret-value' if name == 'TUSHARE_TOKEN' else None):
+            code, result = self.invoke(['capabilities', '--offline'])
+        self.assertEqual(code, 0)
+        self.assertTrue(result['ok'])
+        self.assertTrue(result['data']['credentials']['TUSHARE_TOKEN'])
+        self.assertFalse(result['data']['credentials']['DEEPSEEK_API_KEY'])
+        self.assertNotIn('secret-value', json.dumps(result))
+
     def test_garden_output_collision_is_rejected_before_network(self):
         output = self.base / 'user report.md'
         output.write_text('keep', encoding='utf-8')

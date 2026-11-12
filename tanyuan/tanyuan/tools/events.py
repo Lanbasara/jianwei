@@ -15,7 +15,9 @@ from ..registry import tool
 from ..util import clamp, now_iso, num, resolve_symbol
 
 
-def _fmt_date(raw) -> str:
+def _fmt_date(raw) -> str | None:
+    if raw is None or raw == "":
+        return None
     text = str(raw)
     return f"{text[:4]}-{text[4:6]}-{text[6:8]}" if len(text) == 8 and text.isdigit() else text
 
@@ -46,6 +48,8 @@ def _norm_date(value: str | None, *, name: str) -> str | None:
     returns=[
         {"field": "events[].kind", "desc": "forecast 或 express;provenance.units 按此值选择适用单位"},
         {"field": "events[].ann_date", "desc": "上游公告日;不代表当前返回版本在该日已经可见"},
+        {"field": "events[].first_ann_date", "desc": "首次公告日(上游提供时);用于区分首次披露与后续更新/更正"},
+        {"field": "events[].update_flag", "desc": "上游更新标记;不保证历史版本可回放"},
         {"field": "events[].end_date", "desc": "报告期"},
         {"field": "events[].type", "desc": "预告类型:预增/预减/扭亏/首亏…"},
         {"field": "events[].net_profit_min_wan / net_profit_max_wan", "desc": "forecast 预计净利润区间(万元)"},
@@ -148,6 +152,181 @@ def fundamental_earnings(args: dict) -> Result:
                               "message": "公告日和报告期由上游提供;未保存修订历史,不能据此保证严格 PIT 回放"}],
         next=[{"tool": "filing.announcements", "why": "回一手公告 PDF 核验"},
               {"tool": "fundamental.financials", "why": "等正式财报出来后核对"}],
+    )
+
+
+# ── forward event calendar ──────────────────────────────────────────────────
+
+@tool(
+    name="events.calendar",
+    summary="A 股事件日历:预约披露、限售解禁、分红除权(按股票与日期窗口)",
+    covers=["预约披露计划/实际披露日", "限售股解禁日期与规模", "分红除权/登记/派息日"],
+    not_covers=["股东大会/说明会/路演", "指数调整/宏观日历", "全市场无标的日历"],
+    args_schema={
+        "code": {"type": "string", "required": True, "description": "股票代码", "example": "600183"},
+        "start_date": {"type": "string", "format": "date", "description": "事件日期起始,默认今天"},
+        "end_date": {"type": "string", "format": "date", "description": "事件日期结束,默认今天+180 天"},
+        "kind": {"type": "string", "enum": ["all", "disclosure", "unlock", "dividend"],
+                 "description": "事件类型,默认 all"},
+        "limit": {"type": "integer", "min": 1, "max": 200, "description": "最多返回事件数,默认 50"},
+    },
+    returns=[
+        {"field": "events[].kind", "desc": "disclosure / unlock / dividend"},
+        {"field": "events[].date", "desc": "事件日期(YYYY-MM-DD);计划日期可能被公司修改"},
+        {"field": "events[].date_basis", "desc": "scheduled=计划/未来, actual=已发生/实际"},
+        {"field": "events[].details", "desc": "披露计划、解禁规模或分红进度等明细"},
+        {"field": "window / counts / complete", "desc": "查询窗口、各类事件计数、是否所有来源成功"},
+    ],
+    source="tushare_events", grade="L1", cache_ttl_s=3600, cost="free",
+    errors=["BAD_ARGUMENT", "NO_DATA", "AUTH_FAILED", "SOURCE_UNAVAILABLE"],
+    examples=[{"args": {"code": "600183"},
+               "cmd": "ty call events.calendar --json '{\"code\":\"600183\"}'"},
+              {"args": {"code": "600183", "kind": "unlock", "start_date": "2026-01-01", "end_date": "2027-12-31"},
+               "cmd": "ty call events.calendar --json '{\"code\":\"600183\",\"kind\":\"unlock\"}'"}],
+    latency_hint_ms=800,
+)
+def events_calendar(args: dict) -> Result:
+    sym = resolve_symbol(args["code"])
+    today = date.today()
+    start = date.fromisoformat(args.get("start_date") or today.isoformat())
+    end = date.fromisoformat(args.get("end_date") or (today + timedelta(days=180)).isoformat())
+    if start > end:
+        raise bad_arg("start_date 不能晚于 end_date", hint="按 YYYY-MM-DD 提供日期区间")
+    kind = args.get("kind") or "all"
+    limit = clamp(int(args.get("limit") or 50), 1, 200)
+    start_s, end_s = start.isoformat(), end.isoformat()
+    items: list[dict] = []
+    failures: list[tuple[str, TanyuanError]] = []
+    warnings: list[dict] = []
+
+    def add(item: dict) -> None:
+        if start_s <= item["date"] <= end_s:
+            items.append(item)
+
+    if kind in ("all", "disclosure"):
+        try:
+            rows = tushare.call(
+                "disclosure_date", {"ts_code": sym.ts_code},
+                "ts_code,ann_date,end_date,pre_date,actual_date",
+            )
+            for row in rows:
+                actual = _fmt_date(row.get("actual_date"))
+                pre = _fmt_date(row.get("pre_date"))
+                event_date = actual or pre
+                if not event_date:
+                    continue
+                add({
+                    "kind": "disclosure",
+                    "date": event_date,
+                    "date_basis": "actual" if actual else "scheduled",
+                    "source": "tushare_disclosure_date",
+                    "details": {
+                        "report_period": _fmt_date(row.get("end_date")),
+                        "ann_date": _fmt_date(row.get("ann_date")),
+                        "pre_date": pre,
+                        "actual_date": actual,
+                    },
+                })
+        except TanyuanError as exc:
+            failures.append(("disclosure_date", exc))
+            warnings.append({"type": "source_error", "api": "disclosure_date", "error": exc.to_dict()})
+
+    if kind in ("all", "unlock"):
+        try:
+            rows = tushare.call(
+                "share_float",
+                {"ts_code": sym.ts_code, "start_date": start.strftime("%Y%m%d"),
+                 "end_date": end.strftime("%Y%m%d")},
+                "ts_code,ann_date,float_date,float_share,float_ratio,holder_name,share_type",
+            )
+            for row in rows:
+                event_date = _fmt_date(row.get("float_date"))
+                if not event_date:
+                    continue
+                add({
+                    "kind": "unlock",
+                    "date": event_date,
+                    "date_basis": "scheduled" if event_date >= today.isoformat() else "actual",
+                    "source": "tushare_share_float",
+                    "details": {
+                        "ann_date": _fmt_date(row.get("ann_date")),
+                        "float_share": num(row.get("float_share")),
+                        "float_ratio_pct": num(row.get("float_ratio")),
+                        "holder_name": row.get("holder_name"),
+                        "share_type": row.get("share_type"),
+                    },
+                })
+        except TanyuanError as exc:
+            failures.append(("share_float", exc))
+            warnings.append({"type": "source_error", "api": "share_float", "error": exc.to_dict()})
+
+    if kind in ("all", "dividend"):
+        try:
+            rows = tushare.call(
+                "dividend", {"ts_code": sym.ts_code},
+                "ts_code,end_date,ann_date,div_proc,cash_div_tax,stk_div,record_date,ex_date,pay_date",
+            )
+            for row in rows:
+                event_date = (_fmt_date(row.get("ex_date")) or _fmt_date(row.get("record_date"))
+                              or _fmt_date(row.get("pay_date")))
+                if not event_date:
+                    continue
+                add({
+                    "kind": "dividend",
+                    "date": event_date,
+                    "date_basis": "scheduled" if event_date >= today.isoformat() else "actual",
+                    "source": "tushare_dividend",
+                    "details": {
+                        "report_period": _fmt_date(row.get("end_date")),
+                        "ann_date": _fmt_date(row.get("ann_date")),
+                        "div_proc": row.get("div_proc"),
+                        "cash_div_tax_yuan_per_share": num(row.get("cash_div_tax")),
+                        "stk_div_share_per_share": num(row.get("stk_div")),
+                        "record_date": _fmt_date(row.get("record_date")),
+                        "ex_date": _fmt_date(row.get("ex_date")),
+                        "pay_date": _fmt_date(row.get("pay_date")),
+                    },
+                })
+        except TanyuanError as exc:
+            failures.append(("dividend", exc))
+            warnings.append({"type": "source_error", "api": "dividend", "error": exc.to_dict()})
+
+    if not items:
+        if failures:
+            raise failures[0][1]
+        raise no_data(
+            f"{sym.ts_code} 在 {start_s}~{end_s} 没有命中 {kind} 事件",
+            hint="扩大日期窗口、换 kind=all,或确认 Tushare 接口权限。",
+        )
+    items.sort(key=lambda item: (item["date"], item["kind"]))
+    total_events = len(items)
+    selected = items[:limit]
+    counts = {}
+    for item in selected:
+        counts[item["kind"]] = counts.get(item["kind"], 0) + 1
+    if total_events > limit:
+        warnings.append({"type": "truncated", "message": f"只返回前 {limit} 个事件;总事件数 {total_events}"})
+    warnings.append({
+        "type": "scheduled_dates_may_change",
+        "message": "scheduled 日期来自公司计划/公告,可能被修改;actual 才是已发生日期",
+    })
+    return Result(
+        data={
+            "code": sym.ts_code,
+            "window": [start_s, end_s],
+            "kind": kind,
+            "counts": counts,
+            "total_events": total_events,
+            "events": selected,
+            "complete": not failures,
+            "failed_sources": [api for api, _ in failures],
+        },
+        rows=len(selected), source="tushare_events", grade="L1",
+        source_url="https://api.tushare.pro", as_of=today.isoformat(),
+        units={"float_share": "股", "float_ratio_pct": "%",
+               "cash_div_tax": "元/股(税前)", "stk_div": "股/股"},
+        warnings=warnings,
+        next=[{"tool": "filing.announcements", "why": "回原始公告核对会议/说明会等未覆盖事件"}],
     )
 
 

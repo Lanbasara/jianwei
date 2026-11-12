@@ -91,6 +91,8 @@ def _fmt_ts(value) -> str | None:
                      "description": "公告类别,默认 all"},
         "page_size": {"type": "integer", "min": 1, "max": 30,
                       "description": "每页条数(巨潮硬上限 30),默认 20"},
+        "page": {"type": "integer", "min": 1, "max": 1000,
+                 "description": "页码,从 1 开始;用于继续读取长历史"},
     },
     returns=[
         {"field": "announcements[].title", "desc": "公告标题"},
@@ -98,6 +100,7 @@ def _fmt_ts(value) -> str | None:
         {"field": "announcements[].pdf_url", "desc": "PDF 直链(L0 证据,可直接引用)"},
         {"field": "announcements[].detail_url", "desc": "巨潮详情页"},
         {"field": "total", "desc": "命中总数(可能大于返回条数)"},
+        {"field": "page / page_size / has_more / next_page", "desc": "分页状态;has_more 为 true 时用同一查询加 page+1 继续"},
     ],
     source="cninfo", grade="L0", cache_ttl_s=600, cost="free",
     errors=["BAD_ARGUMENT", "NO_DATA", "SOURCE_UNAVAILABLE", "SOURCE_SCHEMA_CHANGED"],
@@ -110,6 +113,7 @@ def filing_announcements(args: dict) -> Result:
     if sym.market == "bj":
         pass  # CNINFO covers BSE too
     page_size = clamp(int(args.get("page_size") or 20), 1, 30)
+    page = clamp(int(args.get("page") or 1), 1, 1000)
     end_date = args.get("end_date") or config.now_iso()[:10]
     if args.get("start_date"):
         start_date = args["start_date"]
@@ -122,7 +126,7 @@ def filing_announcements(args: dict) -> Result:
         "stock": f"{sym.digits},{_org_id(sym.digits, sym.market)}",
         "tabName": "fulltext",
         "pageSize": str(page_size),
-        "pageNum": "1",
+        "pageNum": str(page),
         "column": "",
         "category": CATEGORIES.get(category, ""),
         "plate": "",
@@ -147,6 +151,10 @@ def filing_announcements(args: dict) -> Result:
                           evidence=str(body)[:300])
 
     org = _org_id(sym.digits, sym.market)
+    try:
+        total = int(body.get("totalAnnouncement")) if body.get("totalAnnouncement") is not None else None
+    except (TypeError, ValueError):
+        total = None
     rows = []
     for item in body.get("announcements") or []:
         adjunct = item.get("adjunctUrl") or ""
@@ -171,8 +179,12 @@ def filing_announcements(args: dict) -> Result:
         )
     published = [r["published_at"] or "" for r in rows if r.get("published_at")]
     latest = max(published) if published else None
+    has_more = (page * page_size < total) if total is not None else len(rows) >= page_size
+    next_page = page + 1 if has_more else None
     return Result(
-        data={"code": sym.prefixed, "total": body.get("totalAnnouncement"),
+        data={"code": sym.prefixed, "total": total,
+              "page": page, "page_size": page_size,
+              "has_more": has_more, "next_page": next_page,
               "returned": len(rows), "sort": "published_at desc, announcement_id desc",
               # 区分「我查的窗口」和「实际拿到的数据跨度」——合成一个字段会让读者误判。
               "query_window": [start_date, end_date],
@@ -183,5 +195,8 @@ def filing_announcements(args: dict) -> Result:
         source_url=QUERY_URL,
         as_of=latest,
         units={"time": "Asia/Shanghai"},
-        next=[{"tool": "search.web", "why": "需要公告的背景/解读时(仅作线索)"}],
+        next=([{"tool": "filing.announcements",
+                 "why": f"继续读取第 {next_page} 页",
+                 "args": {"code": args["code"], "page": next_page}}] if has_more else [])
+             + [{"tool": "search.web", "why": "需要公告的背景/解读时(仅作线索)"}],
     )

@@ -117,6 +117,9 @@ def build_parser():
     p.add_argument('--no-cache', action='store_true', help='绕过响应缓存；正文重新抓取看工具的 refresh 参数')
     p.epilog = "例：ty call market.quote --json '{\"codes\":[\"600036\"]}'；ty call market.quote --arg code=600036。工具帮助：ty call <tool> --help。"
     command('doctor', '联网检查上游与本地缓存；可能调用计费数据源；任一检查失败时退出码非零')
+    p = command('capabilities', '检查当前凭据与数据源可用能力；不输出密钥；联网探测可关闭')
+    p.add_argument('--offline', action='store_true', help='只检查凭据是否配置，不联网探测接口')
+    p.add_argument('--pretty', action='store_true', help='缩进 JSON 输出')
     p = command('cache', '本地缓存检查与清理；省略子命令时显示 stats')
     sub = p.add_subparsers(dest='cache_action')
     command('stats', '显示缓存和正文存储统计', sub, ('cache', 'stats'))

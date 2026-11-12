@@ -20,7 +20,7 @@ from tanyuan import blobs, cache, cli, config, garden, registry
 from tanyuan.envelope import Result, success
 from tanyuan.errors import Code, TanyuanError, auth_failed, rate_limited, unavailable
 from tanyuan.source_sets import registry_path, validate_registry
-from tanyuan.tools import capital, events, history, industry, macro, newsfeed, search
+from tanyuan.tools import capital, events, filing, fundamental, history, industry, macro, newsfeed, search
 
 registry.load_tools()
 
@@ -261,6 +261,109 @@ class SourcePathTests(LocalState):
                 with self.assertRaises(TanyuanError):
                     garden.restore(str(broken), source_set='sample', yes=yes)
                 self.assertEqual(target.read_text(), original)
+
+
+class ConsensusTests(unittest.TestCase):
+    def test_aggregates_by_quarter_without_faking_consensus(self):
+        rows = [
+            {'report_date': '20261105', 'org_name': '机构A', 'quarter': '2027Q1',
+             'eps': 1.0, 'np': 100.0, 'pe': 10.0, 'rating': '买入'},
+            {'report_date': '20261106', 'org_name': '机构B', 'quarter': '2027Q1',
+             'eps': 3.0, 'np': 300.0, 'pe': 20.0, 'rating': '增持'},
+            {'report_date': '20261107', 'org_name': '机构A', 'quarter': '2027Q2',
+             'eps': 2.0, 'np': 200.0, 'pe': 30.0, 'rating': '买入'},
+        ]
+        with patch.object(fundamental.tushare, 'call', return_value=rows):
+            result = fundamental.fundamental_consensus({'code': '600183'})
+        self.assertEqual(result.data['n_reports'], 3)
+        self.assertEqual(result.data['n_institutions'], 2)
+        periods = {item['quarter']: item for item in result.data['periods']}
+        self.assertEqual(periods['2027Q1']['n_reports'], 2)
+        self.assertEqual(periods['2027Q1']['eps']['median'], 2.0)
+        self.assertEqual(periods['2027Q1']['ratings'], {'买入': 1, '增持': 1})
+        self.assertEqual(result.units['np_wan'], '万元')
+        self.assertTrue(any(w['type'] == 'sell_side_forecasts' for w in result.warnings))
+
+    def test_empty_consensus_is_no_data(self):
+        with patch.object(fundamental.tushare, 'call', return_value=[]):
+            with self.assertRaises(TanyuanError) as raised:
+                fundamental.fundamental_consensus({'code': '600183'})
+        self.assertEqual(raised.exception.code, Code.NO_DATA)
+
+    def test_consensus_transport_error_is_not_empty(self):
+        with patch.object(fundamental.tushare, 'call', side_effect=auth_failed('denied')):
+            with self.assertRaises(TanyuanError) as raised:
+                fundamental.fundamental_consensus({'code': '600183'})
+        self.assertEqual(raised.exception.code, Code.AUTH_FAILED)
+
+
+class CalendarTests(unittest.TestCase):
+    def test_calendar_merges_disclosure_unlock_and_dividend(self):
+        rows = {
+            'disclosure_date': [
+                {'ann_date': '20260924', 'end_date': '20260930', 'pre_date': '20261030',
+                 'actual_date': '20261030'},
+                {'ann_date': '20270320', 'end_date': '20270630', 'pre_date': '20270715',
+                 'actual_date': None},
+            ],
+            'share_float': [
+                {'ann_date': '20261201', 'float_date': '20270115', 'float_share': 400000.0,
+                 'float_ratio': 0.0165, 'holder_name': '股东', 'share_type': '定增'},
+            ],
+            'dividend': [
+                {'ann_date': '20261101', 'end_date': '20251231', 'div_proc': '实施',
+                 'cash_div_tax': 0.5, 'stk_div': 0.0, 'record_date': '20261120',
+                 'ex_date': '20261121', 'pay_date': '20261122'},
+            ],
+        }
+
+        def fake(api, params, fields):
+            return rows[api]
+
+        with patch.object(events.tushare, 'call', side_effect=fake):
+            result = events.events_calendar({
+                'code': '600183', 'start_date': '2026-10-01', 'end_date': '2027-12-31',
+            })
+        kinds = {item['kind'] for item in result.data['events']}
+        self.assertEqual(kinds, {'disclosure', 'unlock', 'dividend'})
+        self.assertTrue(result.data['complete'])
+        self.assertEqual(result.units['float_share'], '股')
+
+    def test_calendar_partial_failure_preserves_success(self):
+        def fake(api, params, fields):
+            if api == 'share_float':
+                raise unavailable('offline')
+            if api == 'disclosure_date':
+                return [{'ann_date': '20260924', 'end_date': '20260930',
+                         'pre_date': '20261030', 'actual_date': None}]
+            return []
+
+        with patch.object(events.tushare, 'call', side_effect=fake):
+            result = events.events_calendar({'code': '600183', 'kind': 'all',
+                                             'start_date': '2026-01-01', 'end_date': '2027-12-31'})
+        self.assertFalse(result.data['complete'])
+        self.assertEqual(result.data['failed_sources'], ['share_float'])
+        self.assertTrue(result.data['events'])
+
+
+class FilingPaginationTests(unittest.TestCase):
+    def test_page_is_forwarded_and_has_more_is_derived_from_total(self):
+        body = {
+            'totalAnnouncement': 65,
+            'announcements': [{
+                'announcementTitle': '测试公告', 'announcementId': 'a1',
+                'announcementTime': 1700000000000, 'adjunctUrl': 'x.pdf',
+                'announcementTypeName': '临时公告', 'adjunctSize': 12,
+            }],
+        }
+        with patch.object(filing.http, 'post_json', return_value=body) as upstream, \
+                patch.object(filing, '_org_id', return_value='org-test'):
+            result = filing.filing_announcements({'code': '600519', 'page': 2, 'page_size': 30})
+        form = upstream.call_args.kwargs['data']
+        self.assertEqual(form['pageNum'], '2')
+        self.assertEqual(result.data['page'], 2)
+        self.assertTrue(result.data['has_more'])
+        self.assertEqual(result.data['next_page'], 3)
 
 
 class BoundaryTests(unittest.TestCase):

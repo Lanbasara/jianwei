@@ -16,6 +16,7 @@ ty --help                 # CLI 入口与下一层帮助
 ty tools                  # 按问题选择能力，检查 covers / not_covers
 ty describe <tool>        # 参数、组合约束、结果字段与示例
 ty call <tool> --json '<参数对象>'
+ty capabilities --offline # 检查凭据是否配置；不加 --offline 会探测当前 token 的可用接口
 ```
 
 知道工具名后可直接 `describe`，无需每次重列全部工具。工具参数和覆盖范围以当前 CLI 为准。

@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.5.0 - 2026-11-12
+
+- Add `ty capabilities` for credential checks and token-aware capability probes; it
+  never prints secrets and skips quota-sensitive `report_rc` by default.
+- Paginate `filing.announcements` (`page/has_more/next_page`) and document
+  `first_ann_date`/`update_flag` for earnings disclosures.
+- Add `fundamental.consensus` (aggregated sell-side forecasts) and
+  `events.calendar` (disclosure, unlock and dividend windows) with explicit
+  scheduled/actual status, units, warnings and partial-failure reporting.
+- Map Tushare rate-limit errors to `RATE_LIMITED` instead of `BAD_ARGUMENT`.
+- Bundle Tanyuan 0.6.0; existing jianwei skills and installation layout are
+  unchanged. No migration is required.
+- Rebuild `plugin/` and add offline regression coverage; build and Marketplace
+  contracts pass.
+
 ## 0.4.0 - 2026-11-12
 
 - Add `explain` to make AI-generated investment analysis understandable without
