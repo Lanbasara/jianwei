@@ -49,7 +49,8 @@ def call(api_name: str, params: dict | None = None, fields: str = "") -> list[di
                 f"Tushare 无权访问 {api_name}: {msg}",
                 hint="该接口需要更高积分或单独购买权限;换免费源或升级账号。",
             )
-        if "每分钟" in msg or "rate" in low or "限制" in msg:
+        if ("每分钟" in msg or "次/分" in msg or "频率超限" in msg
+                or "rate" in low or "限制" in msg):
             raise rate_limited(f"Tushare 限流: {msg}", retry_after_s=60)
         if "积分" in msg:
             raise auth_failed(f"Tushare 积分不足: {msg}")

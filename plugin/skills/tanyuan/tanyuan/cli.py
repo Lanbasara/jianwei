@@ -154,6 +154,9 @@ def _main(argv):
         result = _doctor()
         _print(result, pretty=True)
         return 0 if result['ok'] else 4
+    if ns.command == 'capabilities':
+        _print(_capabilities(offline=ns.offline), pretty=ns.pretty)
+        return 0
     raise bad_arg('没有这个子命令。', '运行 ty --help。')
 
 
@@ -208,6 +211,78 @@ def _garden_command(ns):
         result = garden.restore(ns.snapshot, source_set=source, yes=ns.yes)
     _print({'ok': True, 'tool': 'garden', 'data': result}, pretty=True)
     return 0
+
+
+def _capabilities(*, offline: bool) -> dict:
+    """Report credential presence and probe the capabilities the token can actually use.
+
+    The probe is deliberately narrow: one call per interface, tiny fields/windows, and
+    every failure is reported instead of raised. It never prints or returns secrets.
+    """
+    from datetime import date, timedelta
+    from time import monotonic
+    from . import config, tushare
+    from .errors import TanyuanError
+
+    credential_names = ('TUSHARE_TOKEN', 'DEEPSEEK_API_KEY', 'TAVILY_API_KEY', 'SEC_CONTACT')
+    credentials = {name: bool(config.secret(name)) for name in credential_names}
+    if offline or not credentials['TUSHARE_TOKEN']:
+        return {
+            'ok': True,
+            'tool': 'capabilities',
+            'data': {
+                'credentials': credentials,
+                'tushare': {
+                    'skipped': True,
+                    'reason': 'offline' if offline else 'TUSHARE_TOKEN 未配置',
+                    'apis': [],
+                },
+            },
+        }
+
+    today = date.today()
+    recent = (today - timedelta(days=10)).strftime('%Y%m%d')
+    month_ago = (today - timedelta(days=31)).strftime('%Y%m%d')
+    year_ago = (today - timedelta(days=365)).strftime('%Y%m%d')
+    today_s = today.strftime('%Y%m%d')
+    probes = [
+        ('stock_basic', {'list_status': 'L'}, 'ts_code,name', '基础证券列表'),
+        ('trade_cal', {'exchange': 'SSE', 'start_date': recent, 'end_date': today_s}, 'cal_date,is_open', '交易日历'),
+        ('daily', {'ts_code': '600519.SH', 'start_date': recent, 'end_date': today_s}, 'ts_code,trade_date', '个股日线'),
+        ('research_report', {'ts_code': '600519.SH', 'start_date': month_ago, 'end_date': today_s}, 'trade_date,title', '券商研报'),
+        ('disclosure_date', {'ts_code': '600519.SH'}, 'ts_code,pre_date,actual_date', '预约披露'),
+        ('share_float', {'ts_code': '600519.SH', 'start_date': year_ago, 'end_date': today_s}, 'ts_code,float_date', '限售解禁'),
+        ('top_list', {'trade_date': today_s}, 'trade_date,ts_code', '龙虎榜'),
+        ('index_weight', {'index_code': '000300.SH', 'start_date': month_ago, 'end_date': today_s}, 'index_code,con_code,weight', '指数成分/权重'),
+        ('stk_surv', {'ts_code': '600519.SH', 'start_date': year_ago, 'end_date': today_s}, 'ts_code,surv_date', '机构调研'),
+        ('pledge_stat', {'ts_code': '600519.SH'}, 'ts_code,end_date', '股权质押'),
+        ('suspend_d', {'trade_date': today_s}, 'ts_code,trade_date', '停牌'),
+        ('cyq_perf', {'ts_code': '600519.SH', 'start_date': month_ago, 'end_date': today_s}, 'ts_code,trade_date', '筹码/胜率'),
+    ]
+    apis = []
+    for api, params, fields, purpose in probes:
+        started = monotonic()
+        try:
+            rows = tushare.call(api, params, fields)
+            apis.append({'api': api, 'purpose': purpose, 'ok': True, 'rows': len(rows),
+                         'latency_ms': round((monotonic() - started) * 1000, 1)})
+        except TanyuanError as exc:
+            apis.append({'api': api, 'purpose': purpose, 'ok': False,
+                         'error': exc.to_dict(), 'latency_ms': round((monotonic() - started) * 1000, 1)})
+    ok_count = sum(1 for item in apis if item['ok'])
+    skipped = [{
+        'api': 'report_rc', 'purpose': '卖方盈利预测', 'skipped': True,
+        'reason': 'report_rc 试用档为 1 次/分钟、10 次/日;为避免消耗配额,capabilities 不探测;用 ty call fundamental.consensus 验证',
+    }]
+    return {
+        'ok': True,
+        'tool': 'capabilities',
+        'data': {
+            'credentials': credentials,
+            'tushare': {'ok': ok_count, 'total': len(apis), 'apis': apis + skipped,
+                        'summary': f'{ok_count}/{len(apis)} Tushare probes reachable; 1 quota-sensitive api skipped'},
+        },
+    }
 
 
 def _doctor() -> dict:

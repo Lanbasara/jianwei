@@ -8,12 +8,13 @@ precision matters) and units are declared in provenance.
 from __future__ import annotations
 
 from datetime import date, timedelta
+from statistics import mean, median
 
 from .. import config, http, tushare
 from ..envelope import Result
 from ..errors import TanyuanError, bad_arg, no_data, schema_changed
 from ..registry import tool
-from ..util import clean_text, num, resolve_symbol
+from ..util import clean_text, clamp, num, resolve_symbol
 
 REPORT_API = "https://reportapi.eastmoney.com/report/list"
 PDF_TPL = "https://pdf.dfcfw.com/pdf/H3_{info_code}_1.pdf"
@@ -126,6 +127,142 @@ def fundamental_reports(args: dict) -> Result:
         warnings=[{"type": "copyright", "message": "研报 PDF 仅限内部研究引用,不得再分发"}],
         units={"price": "CNY", "eps": "元/股"},
         next=[{"tool": "entity.resolve", "why": "确认公司行业归属"}],
+    )
+
+
+# ── sell-side forecast consensus ───────────────────────────────────────────
+
+def _stats(values: list) -> dict | None:
+    vals = [v for v in values if isinstance(v, (int, float)) and not isinstance(v, bool)]
+    if not vals:
+        return None
+    return {"n": len(vals), "median": round(median(vals), 4),
+            "mean": round(mean(vals), 4), "min": round(min(vals), 4),
+            "max": round(max(vals), 4)}
+
+
+@tool(
+    name="fundamental.consensus",
+    summary="卖方盈利预测聚合(按预测报告期汇总 EPS/净利润/PE、机构数与评级分布)",
+    covers=["A 股卖方盈利预测(report_rc)按预测报告期聚合", "机构数、样本数、评级分布与离散度",
+            "最近 N 篇研报的覆盖情况"],
+    not_covers=["市场实际共识/期权隐含预期", "公司指引或非卖方预测", "港股/美股"],
+    args_schema={
+        "code": {"type": "string", "required": True, "description": "股票代码", "example": "600183"},
+        "start_date": {"type": "string", "format": "date", "description": "研报日期起始,默认 end-180 天"},
+        "end_date": {"type": "string", "format": "date", "description": "研报日期结束,默认今天"},
+        "limit": {"type": "integer", "min": 1, "max": 3000,
+                  "description": "最多使用的研报条数,按日期倒序取最近 N 篇;默认 500"},
+    },
+    returns=[
+        {"field": "periods[].quarter", "desc": "预测报告期,如 2026Q4;不同机构可能覆盖不同季度"},
+        {"field": "periods[].n_reports / n_institutions", "desc": "样本研报数 / 覆盖机构数"},
+        {"field": "periods[].eps", "desc": "EPS 预测的 n/median/mean/min/max(元/股)"},
+        {"field": "periods[].np_wan", "desc": "归母净利润预测的统计量(万元)"},
+        {"field": "periods[].pe", "desc": "预测 PE 的统计量(倍)"},
+        {"field": "periods[].ratings", "desc": "评级分布,如 增持/买入/中性"},
+        {"field": "recent_reports[]", "desc": "最近研报的机构、日期、评级与预测值"},
+    ],
+    source="tushare_report_rc", grade="L2", cache_ttl_s=3600, cost="free",
+    errors=["BAD_ARGUMENT", "NO_DATA", "AUTH_FAILED", "SOURCE_UNAVAILABLE"],
+    examples=[{"args": {"code": "600183"},
+               "cmd": "ty call fundamental.consensus --json '{\"code\":\"600183\"}'"},
+              {"args": {"code": "600183", "limit": 100},
+               "cmd": "ty call fundamental.consensus --json '{\"code\":\"600183\",\"limit\":100}'"}],
+    latency_hint_ms=500,
+)
+def fundamental_consensus(args: dict) -> Result:
+    sym = resolve_symbol(args["code"])
+    end = date.fromisoformat(args.get("end_date") or date.today().isoformat())
+    start = date.fromisoformat(args.get("start_date") or (end - timedelta(days=180)).isoformat())
+    if start > end:
+        raise bad_arg("start_date 不能晚于 end_date", hint="按 YYYY-MM-DD 提供日期区间")
+    limit = clamp(int(args.get("limit") or 500), 1, 3000)
+    rows = tushare.call(
+        "report_rc",
+        {"ts_code": sym.ts_code, "start_date": start.strftime("%Y%m%d"),
+         "end_date": end.strftime("%Y%m%d")},
+        "",
+    )
+    if not rows:
+        raise no_data(
+            f"{sym.ts_code} 在 {start}~{end} 没有卖方盈利预测",
+            hint="扩大日期区间;或确认 Tushare report_rc 权限是否可用。",
+        )
+    rows = sorted(rows, key=lambda r: str(r.get("report_date") or ""), reverse=True)
+    truncated = len(rows) > limit
+    used = rows[:limit]
+    periods: dict[str, dict] = {}
+    recent_reports = []
+    for row in used:
+        quarter = str(row.get("quarter") or "unknown")
+        bucket = periods.setdefault(quarter, {
+            "quarter": quarter, "reports": 0, "orgs": set(),
+            "eps": [], "np_wan": [], "pe": [], "ratings": {},
+            "latest_report_date": None,
+        })
+        bucket["reports"] += 1
+        if row.get("org_name"):
+            bucket["orgs"].add(str(row.get("org_name")).strip())
+        bucket["eps"].append(num(row.get("eps")))
+        bucket["np_wan"].append(num(row.get("np")))
+        bucket["pe"].append(num(row.get("pe")))
+        rating = row.get("rating")
+        if rating:
+            bucket["ratings"][str(rating)] = bucket["ratings"].get(str(rating), 0) + 1
+        report_date = _fmt8(row.get("report_date"))
+        if report_date and (bucket["latest_report_date"] is None or report_date > bucket["latest_report_date"]):
+            bucket["latest_report_date"] = report_date
+        if len(recent_reports) < 10:
+            recent_reports.append({
+                "report_date": report_date,
+                "org_name": row.get("org_name"),
+                "author_name": row.get("author_name"),
+                "report_title": row.get("report_title"),
+                "rating": rating,
+                "quarter": quarter,
+                "eps": num(row.get("eps")),
+                "np_wan": num(row.get("np")),
+                "pe": num(row.get("pe")),
+            })
+    period_items = []
+    for quarter in sorted(periods):
+        bucket = periods[quarter]
+        period_items.append({
+            "quarter": quarter,
+            "n_reports": bucket["reports"],
+            "n_institutions": len(bucket["orgs"]),
+            "eps": _stats(bucket["eps"]),
+            "np_wan": _stats(bucket["np_wan"]),
+            "pe": _stats(bucket["pe"]),
+            "ratings": bucket["ratings"],
+            "latest_report_date": bucket["latest_report_date"],
+        })
+    orgs_all = {str(r.get("org_name")).strip() for r in used if r.get("org_name")}
+    latest = max((_fmt8(r.get("report_date")) or "" for r in used), default="") or None
+    warnings = [{
+        "type": "sell_side_forecasts",
+        "message": "这是卖方预测的聚合,不等于市场实际共识;样本、覆盖机构与时间窗有限,不同季度不可直接相加",
+    }]
+    if truncated:
+        warnings.append({"type": "truncated", "message": f"只使用最近 {limit} 篇研报;总条数 {len(rows)}"})
+    return Result(
+        data={
+            "code": sym.ts_code,
+            "window": [start.isoformat(), end.isoformat()],
+            "n_reports": len(used),
+            "n_institutions": len(orgs_all),
+            "latest_report_date": latest,
+            "truncated": truncated,
+            "periods": period_items,
+            "recent_reports": recent_reports,
+        },
+        rows=len(period_items), source="tushare_report_rc", grade="L2",
+        source_url="https://api.tushare.pro", as_of=latest,
+        units={"eps": "元/股", "np_wan": "万元", "pe": "倍"},
+        warnings=warnings,
+        next=[{"tool": "fundamental.earnings", "why": "核对公司业绩预告/快报"},
+              {"tool": "filing.announcements", "why": "回到公司原始披露核对"}],
     )
 
 

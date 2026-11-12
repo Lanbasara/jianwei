@@ -14,6 +14,9 @@
 | 行业 | Tushare sw_daily | 申万指数口径,不等于其他提供方的概念板块 |
 | 北向/南向 | Tushare moneyflow_hsgt | 北向按披露时期区分指标;南向原字段口径未确认,不能计算日净流入 |
 | 新闻/研报 | 东财、见闻、RSS | 只作线索,不保证完整覆盖或历史档案 |
+| 卖方盈利预测 | Tushare report_rc | 卖方预测聚合,不是市场实际共识;样本/覆盖/报告期不同;试用档 1 次/分钟、10 次/日 |
+| 预约披露/解禁 | Tushare disclosure_date / share_float | 计划日期可能变更;解禁规模与比例按接口单位;只覆盖 A 股 |
+| 券商研报 | Tushare research_report / 东财 reportapi | 研报为 L2 线索;全文与 PDF 需回原文;不保证覆盖全部机构 |
 | 宏观 | Tushare、东财镜像、中债、海外官方源 | 区分数据期间、发布日期和取得时间;数据可能修订 |
 | 搜索/正文 | DeepSeek / Tavily | 搜索只作发现;正文提取可能失败或缺失内容 |
 

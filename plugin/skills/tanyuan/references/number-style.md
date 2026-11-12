@@ -19,6 +19,8 @@
 | `market.quote` | 按响应字段说明;成交量使用记录中的 `volume_unit` | 腾讯行情及 `ty describe market.quote` |
 | `market.margin` | 金额从元转成亿元,原值保留在 `raw` | [Tushare 两融明细](https://tushare.pro/document/2?doc_id=59) |
 | `market.northbound` | 北向净买入与成交额分别返回,适用时期见 `disclosure_change`;南向原字段口径未核验 | [港交所披露调整](https://www.hkex.com.hk/News/Market-Communications/2024/2404122news?sc_lang=en)及本次响应说明 |
+| `fundamental.consensus` | EPS 为元/股,归母净利润 np 为万元,PE 为倍;各报告期分开统计,不要跨期相加 | [Tushare 卖方盈利预测](https://tushare.pro/document/2?doc_id=292) |
+| `events.calendar` unlock | `float_share` 为股,`float_ratio_pct` 为百分比;分红税前(元/股)与送转(股/股)分开 | [Tushare 限售解禁](http://tushare.pro/document/2?doc_id=160)、[分红](https://tushare.pro/document/2?doc_id=46) |
 
 源说明与实际数据冲突时,保留两者并披露冲突;不要静默选择一个口径。
 

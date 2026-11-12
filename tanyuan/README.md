@@ -55,6 +55,8 @@ chmod 600 .env
 ./.tanyuan/bin/ty help response
 ./.tanyuan/bin/ty --version
 ./.tanyuan/bin/ty tools
+./.tanyuan/bin/ty capabilities --offline
+./.tanyuan/bin/ty capabilities
 ./.tanyuan/bin/ty describe market.quote
 ./.tanyuan/bin/ty call market.quote --json '{"codes":["600036"]}'
 ```
