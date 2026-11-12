@@ -9,9 +9,13 @@
 
 ## 决定
 
-沿用 [research-then-report](../../jianwei/skills/research-then-report/SKILL.md) 的轻量组合方式，提供 [research-then-explain](../../jianwei/skills/research-then-explain/SKILL.md)、[advise-then-explain](../../jianwei/skills/advise-then-explain/SKILL.md) 和 [reflect-then-explain](../../jianwei/skills/reflect-then-explain/SKILL.md)。先按原能力的完成条件结束分析，再委派通用子智能体读取并执行 explain，主智能体直接向用户交付。完整分析、必要依据与用户语境通过任务交接，不另建状态协议或要求用户再次发起请求。
+沿用 [research-then-report](../../jianwei/skills/research-then-report/SKILL.md) 的轻量组合方式，提供 [research-then-explain](../../jianwei/skills/research-then-explain/SKILL.md)、[advise-then-explain](../../jianwei/skills/advise-then-explain/SKILL.md) 和 [reflect-then-explain](../../jianwei/skills/reflect-then-explain/SKILL.md)。先按原能力的完成条件结束分析，再读取并执行 explain，默认由当前 agent 在同一上下文中完成讲解。需要独立阅读视角或较大表达工作量时，可以按需委派，交接完整分析、必要依据与用户语境，子智能体的能力与工具随讲解任务选择。主 agent 核对受委派的讲解保留原分析的判断、依据与条件后交付，不另建状态协议或要求用户再次发起请求。
 
 这些是按需选择的组合入口，不修改 research、advise、reflect、explain 或现有研究成稿组合的职责与正文。已有分析只需讲解时，直接使用 explain，不重复分析；格式、图形选择与忠实性由 explain 维护，不复制进三个组合。
+
+## 执行方式的取舍
+
+专业职责隔离不要求 agent 上下文隔离。当前 agent 接续讲解可保留分析与用户语境，减少交接；独立子智能体可按需要提供新的阅读视角或承接较大的表达工作。因此固定分析与讲解的职责顺序，不固定执行者，也不将通用子智能体或完整写作工具作为纯文本讲解的前提。此选择不改变研究阶段自身的协作与独立复核要求，也不据此改变 research-then-report 的成稿委派方式。
 
 ## 复盘组合的价值与限度
 

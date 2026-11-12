@@ -12,7 +12,7 @@ reflect 可从市场事件、投资经历、旧研判或外部材料开始，解
 
 explain 可在同一任务中承接 research、advise、reflect 等形成的分析结果，向用户讲清判断、推断关系、分歧与取舍，也可回应对已有分析的追问；不要求用户另行提供成稿或先表示看不懂。默认在对话中用普通 Markdown 表达，需要时使用纯文本关系图，不要求图形、模板或独立文件。它不继续形成投资判断，也不是研究、建议或 report 的必经步骤。
 
-需要一次请求完成分析与讲解时，可选 [research-then-explain](skills/research-then-explain/SKILL.md)、[advise-then-explain](skills/advise-then-explain/SKILL.md) 或 [reflect-then-explain](skills/reflect-then-explain/SKILL.md)：先按各自能力完成研究、建议或复盘，再委派通用子智能体执行 explain，由主智能体直接交付讲解。原能力仍可独立使用；已有分析只需讲解时，直接使用 explain，不必重做分析。
+需要一次请求完成分析与讲解时，可选 [research-then-explain](skills/research-then-explain/SKILL.md)、[advise-then-explain](skills/advise-then-explain/SKILL.md) 或 [reflect-then-explain](skills/reflect-then-explain/SKILL.md)：先按各自能力完成研究、建议或复盘，再读取并遵循 explain，默认由当前 agent 在同一上下文中完成讲解并交付；需要独立阅读视角或较大表达工作量时可按需委派，由主 agent 核对后交付。原能力仍可独立使用；已有分析只需讲解时，直接使用 explain，不必重做分析。
 
 report 以专业编辑与写作者的身份承接已有成果，根据材料、读者与用途自主决定表达，保留原成果的性质、判断强度、条件与证据关系。需要 HTML 时可以在分析或建议完成后接续，也可以独立指定已有产物成稿；原有 research-then-report 流程继续用于研究并形成研报。成稿位置和来源记录遵循[工作区约定](WORKSPACE.md)。
 
