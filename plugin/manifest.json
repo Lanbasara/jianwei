@@ -16,14 +16,14 @@
     "references/portfolio-snapshot.md": "0506d92b7adf3664372e4de5cfb55fdcd29bb1048822faad21972c1f675a1be0",
     "scripts/runtime.py": "d7749e5e3ef7deecb1ceed5a723832dd524a6b604e384584ad7046e72ce5e44a",
     "scripts/setup.py": "eb23c4d9473b245813cf32d3b6b21a7f15c618d4e812f5ef3e8b6c1996fb7b4a",
-    "skills/advise/SKILL.md": "2dc4da2bd181bdac610d7d44d40ca0f09eccd26e773b702b4838eb4958992ed6",
+    "skills/advise/SKILL.md": "012e40ede79cbe90769788925721f3827040ad5d60b1b72423a5ef4fd89881ca",
     "skills/advise-then-explain/SKILL.md": "08fb4cd1cf2eb5a4f7ac38353165e522ca133e6e61e5482d784e8058115be479",
     "skills/explain/SKILL.md": "86c967997ee092787d9c56fa490e9e0407005b0da1450df4ff9abb75bd5c8ed4",
     "skills/portfolio/SKILL.md": "b33daf772034eb6f4423483ebaa89b036ad818c5a9c97120249d46fb34278e4d",
     "skills/reflect/SKILL.md": "727b6a77d7c2a08e15968fa639f95fa72f3efea74459a3f316c514e90def440e",
     "skills/reflect-then-explain/SKILL.md": "dc21799e1fd7f20d929e481050f07d78a5f13bc42652d37b840d446325593345",
     "skills/report/SKILL.md": "24a20d5595a2aadbc1f09d2e64e5be42513a1cb4a60f69566a3b4b0430b3ddb9",
-    "skills/research/SKILL.md": "5b95d1f543dad5ba7992b1ad780a6ee987a3db96c9fcbaa2529ef97b2b44e01c",
+    "skills/research/SKILL.md": "55ec0366482bfa2756108228bf3f3c104dac2de395143a533a28f7fa267ab173",
     "skills/research-then-explain/SKILL.md": "5cf5c96e74b5c26f089cc53e56303bc089a6f33b24ef88d52e8984bfaf13ccc8",
     "skills/research-then-report/SKILL.md": "dcbc29d35b55d5f6eb7dc3d0ab19951c3abaf8c2886f39c2ab86351a4e94e958",
     "skills/setup/SKILL.md": "85fa6835321b38cbe6bd41de30c940eaa6e83d3d1b2668b94777eecbfab5963d",
@@ -147,13 +147,13 @@
       "sha256": "85fa6835321b38cbe6bd41de30c940eaa6e83d3d1b2668b94777eecbfab5963d"
     },
     "research": {
-      "sha256": "5b95d1f543dad5ba7992b1ad780a6ee987a3db96c9fcbaa2529ef97b2b44e01c"
+      "sha256": "55ec0366482bfa2756108228bf3f3c104dac2de395143a533a28f7fa267ab173"
     },
     "portfolio": {
       "sha256": "b33daf772034eb6f4423483ebaa89b036ad818c5a9c97120249d46fb34278e4d"
     },
     "advise": {
-      "sha256": "2dc4da2bd181bdac610d7d44d40ca0f09eccd26e773b702b4838eb4958992ed6"
+      "sha256": "012e40ede79cbe90769788925721f3827040ad5d60b1b72423a5ef4fd89881ca"
     },
     "reflect": {
       "sha256": "727b6a77d7c2a08e15968fa639f95fa72f3efea74459a3f316c514e90def440e"
