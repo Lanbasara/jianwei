@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.5.1 - 2026-11-12
+
+- Clarify that historical archives preserve context and evidence, not current user
+  decisions or authorization; reassess earlier proposals against current information.
+- Preserve the purpose, evidence, open questions, and decision boundaries when
+  handing work to a later task without prescribing its future conclusion.
+- Add paired manual acceptance examples for archives and reminders. Installation,
+  shared runtime, and bundled Tanyuan 0.6.0 are unchanged; no migration is required.
+
 ## 0.5.0 - 2026-11-12
 
 - Add `ty capabilities` for credential checks and token-aware capability probes; it
