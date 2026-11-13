@@ -17,6 +17,7 @@ Capability decisions:
 
 - [Independent investment explanation](../docs/adr/0001-investment-explain.md).
 - [Opt-in analysis and explanation workflows](../docs/adr/0002-analysis-then-explain.md).
+- [Evidence reading views and independent opportunity discovery](../docs/adr/0003-evidence-views-and-open-research.md).
 
 ### Shared runtime
 
@@ -57,7 +58,7 @@ package.json
 cordis.patch.yml
 host/{dsh.mjs,catalog.json}
 scripts/{setup.py,runtime.py}
-skills/{setup,tanyuan,research,portfolio,advise,reflect,explain,report}
+skills/{setup,tanyuan,discover,research,portfolio,advise,reflect,explain,report}
 skills/{research-then-report,research-then-explain,advise-then-explain,reflect-then-explain}
 references/portfolio-snapshot.md
 ```

@@ -59,11 +59,14 @@ chmod 600 .env
 ./.tanyuan/bin/ty capabilities
 ./.tanyuan/bin/ty describe market.quote
 ./.tanyuan/bin/ty call market.quote --json '{"codes":["600036"]}'
+./.tanyuan/bin/ty call news.feed --json '{"since":"7d","limit":20}' --view brief
 ```
 
 让 agent 使用时，可以直接说：“使用 tanyuan 查询数据，将报告写到当前工作区的 reports 目录，并注明来源和日期。”宿主需要允许本地命令执行和数据源网络访问。
 
 成功响应读取 `.data`、`.provenance`，失败读取 `.error`。业务日期与取得时间不同。详细规则见 `SKILL.md` 与 `references/`。`ty doctor` 会联网排障，可能调用计费数据源。`ty garden` 用于源清单维护，写入动作需用户批准。
+
+新闻与搜索可用 `--view brief` 精简阅读，保留日期、来源、覆盖、警告和续查信息，展示省略由 `.view` 明示；默认 `--view full` 保留工具返回。支持范围、条数与文本限制见 `ty help response`。`since` 过滤当前订阅条目，不承诺七天完整历史；专用来源不足时，agent 可用已配置的搜索补查。
 
 基金与 ETF 使用 `fund.*` 工具，先通过 `fund.resolve` 确认份额身份。Tushare 提供数字，公开来源补充净值、披露持仓和报告；接口权限与覆盖以实际响应为准。公开 PDF 可通过 `fetch.url` 的 `provider=local` 本地提取；正文缓存与旧提取方式隔离，使用 `document_version` 续读。原 PDF、分页文字和元数据存放在工作区缓存的 documents/，上限 512 MiB，超限清理较早版本；既有 blob 清理命令同时清理它。文本提取不包含 OCR，不保证复杂表格和图片完整还原。
 

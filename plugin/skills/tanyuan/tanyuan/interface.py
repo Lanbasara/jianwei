@@ -6,6 +6,7 @@ import difflib
 import math
 
 from .errors import Code, EXIT_CODES, RETRYABLE, ERROR_GUIDANCE, TanyuanError, bad_arg
+from .presentation import BRIEF_COLLECTIONS, BRIEF_ITEM_LIMIT, BRIEF_TEXT_LIMIT
 
 
 class HelpRequested(Exception):
@@ -114,6 +115,9 @@ def build_parser():
     p.add_argument('--arg', action='append', default=[], metavar='KEY=VALUE',
                    help='可重复，但键必须不同；保留代码前导零，按工具 schema 转换类型')
     p.add_argument('--pretty', action='store_true', help='缩进 JSON 输出')
+    p.add_argument('--view', choices=('full', 'brief'), default='full', action=Once,
+                   help='默认 full；brief 精简阅读视图支持 ' + '、'.join(BRIEF_COLLECTIONS)
+                        + '，保留来源、时间、覆盖和续查信息；省略见 view，语义见 ty help response')
     p.add_argument('--no-cache', action='store_true', help='绕过响应缓存；正文重新抓取看工具的 refresh 参数')
     p.epilog = "例：ty call market.quote --json '{\"codes\":[\"600036\"]}'；ty call market.quote --arg code=600036。工具帮助：ty call <tool> --help。"
     command('doctor', '联网检查上游与本地缓存；可能调用计费数据源；任一检查失败时退出码非零')
@@ -169,8 +173,14 @@ def topic_help(topic):
                 'python': '安装时默认建立工作区独立 venv；TANYUAN_PYTHON 可显式选择解释器。'}
     if topic == 'response':
         return {'transport': 'stdout 一个 JSON 对象；退出码 0 成功，非零失败。帮助/目录也是 JSON，但不附取数 provenance。',
-                'success': 'ok=true 时读 data；成功不代表结果完整，仍须检查 warnings、data.missing、coverage 和分页字段。',
+                'success': 'ok=true 时读 data；成功不代表结果完整，仍须检查 provenance.warnings、data.missing、data.coverage 和分页字段。',
                 'failure': 'ok=false 时读 error.code/message/hint/details/retryable；无数据仅描述本次来源和范围，不代表事件不存在。',
+                'view': {'default': 'full：保留工具的完整响应；上游自身仍可能有覆盖、数量和正文限制。',
+                         'brief_tools': list(BRIEF_COLLECTIONS),
+                         'brief': f'--view brief 按原顺序展示前 {BRIEF_ITEM_LIMIT} 条；每条 summary/snippet/content 至多 {BRIEF_TEXT_LIMIT} 字符。其他字段及原有截断标记保留，失败原样返回。',
+                         'counts': 'rows 与 data.coverage 仍描述工具返回；view.returned_items/shown_items/omitted_items 只描述本次展示。',
+                         'text': 'view.shortened_fields 逐项声明展示裁剪的路径和长度；其 returned_chars 是工具返回文本长度，不是原文总长度。',
+                         'full_output': '需要未展示的内容时用相同工具参数及 --view full 重新调用；可能命中缓存或取得新响应，不保证同一快照。原文按 fetch.url 读取。'},
                 'dates': {'as_of': '可确认的快照时点，可能为空；不保证历史可得性。',
                           'observed_at': '实际取得时间；缓存命中保留原时间。',
                           'business_date': '引用记录中的交易日/报告期/公告日/发布时间；报告期不等于披露日。'},

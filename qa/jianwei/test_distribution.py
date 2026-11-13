@@ -52,7 +52,7 @@ class Distribution(unittest.TestCase):
             if relative == "skills/tanyuan/bin/ty":
                 path = path.with_name("ty-upstream")
             self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(), digest)
-        for name in ("setup", "research", "portfolio", "advise", "reflect", "explain", "report",
+        for name in ("setup", "discover", "research", "portfolio", "advise", "reflect", "explain", "report",
                      "research-then-report", "research-then-explain",
                      "advise-then-explain", "reflect-then-explain"):
             self.assertEqual((self.bundle / f"skills/{name}/SKILL.md").read_bytes(),
@@ -241,10 +241,12 @@ class Distribution(unittest.TestCase):
         self.assertEqual(config.read_bytes(), before)
         other = self.work / "another directory"
         other.mkdir()
+        manifest = json.loads((self.bundle / "manifest.json").read_text(encoding="utf-8"))
+        version = manifest["components"]["tanyuan"]["version"]
         for cwd in [self.work, other]:
             result = self.run_cli(["--version"], cwd=cwd)
             self.assertEqual(result.returncode, 0, result.stderr)
-            self.assertIn("0.6.0", result.stdout)
+            self.assertEqual(json.loads(result.stdout), {"ok": True, "version": version})
         result = self.run_cli(["tools"])
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertFalse(list(self.bundle.rglob("__pycache__")))

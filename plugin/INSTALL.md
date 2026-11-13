@@ -1,12 +1,12 @@
 # Jianwei 安装与自行验收
 
-本说明对应 Jianwei **0.4.0**。版本正式发布并进入市场后，可按以下方式安装；可用技能以实际安装副本为准。
+本说明对应 Jianwei **0.6.0**。版本正式发布并进入市场后，可按以下方式安装；可用技能以实际安装副本为准。
 
-当前源码含 setup、tanyuan、research、portfolio、advise、reflect、explain、report，以及 research-then-report、research-then-explain、advise-then-explain、reflect-then-explain 组合。不需要另装 tanyuan，也不需要克隆 huoguang。
+当前源码含 setup、tanyuan、discover、research、portfolio、advise、reflect、explain、report，以及 research-then-report、research-then-explain、advise-then-explain、reflect-then-explain 组合。不需要另装 tanyuan，也不需要克隆 huoguang。
 
 ## Claude Code
 
-以下命令须等 `jianwei-marketplace` 中的 Jianwei 条目发布 0.4.0 后使用：
+以下命令须等 `jianwei-marketplace` 中的 Jianwei 条目发布 0.6.0 后使用：
 
 ```bash
 claude plugin marketplace add Lanbasara/jianwei-marketplace
@@ -14,11 +14,11 @@ claude plugin install jianwei@jianwei --scope user
 claude plugin list
 ```
 
-在任意任务目录启动新会话。技能为 `/jianwei:setup`、`/jianwei:tanyuan`、`/jianwei:research`、`/jianwei:portfolio`、`/jianwei:advise`、`/jianwei:reflect`、`/jianwei:explain`、`/jianwei:report`、`/jianwei:research-then-report`、`/jianwei:research-then-explain`、`/jianwei:advise-then-explain`、`/jianwei:reflect-then-explain`。已有会话按宿主提示重新加载或新开会话。用户级安装在本机各项目可用，项目设置仍可覆盖是否启用。
+在任意任务目录启动新会话。技能为 `/jianwei:setup`、`/jianwei:tanyuan`、`/jianwei:discover`、`/jianwei:research`、`/jianwei:portfolio`、`/jianwei:advise`、`/jianwei:reflect`、`/jianwei:explain`、`/jianwei:report`、`/jianwei:research-then-report`、`/jianwei:research-then-explain`、`/jianwei:advise-then-explain`、`/jianwei:reflect-then-explain`。已有会话按宿主提示重新加载或新开会话。用户级安装在本机各项目可用，项目设置仍可覆盖是否启用。
 
 ## Codex
 
-以下命令须等 `jianwei-marketplace` 中的 Jianwei 条目发布 0.4.0 后使用：
+以下命令须等 `jianwei-marketplace` 中的 Jianwei 条目发布 0.6.0 后使用：
 
 ```bash
 codex plugin marketplace add Lanbasara/jianwei-marketplace
@@ -40,20 +40,20 @@ CLI 语法针对本机 **0.163.0-alpha.11.2** 的帮助核对。若旧版没有 
 https://raw.githubusercontent.com/Lanbasara/jianwei-marketplace/main/dsh/index.json
 ```
 
-等市场中的 Jianwei 条目发布 0.4.0 后，在见微市场中选择 `jianwei`，确认版本并安装、启用，按宿主提示重载或重启。然后在同一 profile 的任意工作目录新建任务。若没有「发现」页，先在实验性插件中启用自定义插件市场；`v0.4.0` tag 发布后，也可通过「添加插件」直接输入 `git+https://github.com/Lanbasara/jianwei.git#v0.4.0&path:/plugin`。
+等市场中的 Jianwei 条目发布 0.6.0 后，在见微市场中选择 `jianwei`，确认版本并安装、启用，按宿主提示重载或重启。然后在同一 profile 的任意工作目录新建任务。若没有「发现」页，先在实验性插件中启用自定义插件市场；`v0.6.0` tag 发布后，也可通过「添加插件」直接输入 `git+https://github.com/Lanbasara/jianwei.git#v0.6.0&path:/plugin`。
 
 此地址是 DSH 原生 format 1 市场索引，不是 npm registry，也不是 GitHub 仓库页面。索引把版本映射到固定 Git commit，由 DSH 生成安装地址。当前未发布 npm 包，请勿输入裸包名 `jianwei` 从 npm 安装。
 
 **CLI**：使用你实际运行的 profile，下面以 `web` 为例：
 
 ```bash
-dsh plugin --profile web add 'git+https://github.com/Lanbasara/jianwei.git#v0.4.0&path:/plugin'
+dsh plugin --profile web add 'git+https://github.com/Lanbasara/jianwei.git#v0.6.0&path:/plugin'
 dsh web
 ```
 
 若 shell 没有 `dsh` 但装了 Desktop，使用应用内插件管理。不要重置已有 profile；CLI 与 Desktop 的 profile 不是可以随意互换的名称。
 
-技能名是 **`jianwei-setup`**、**`jianwei-tanyuan`**、**`jianwei-research`**、**`jianwei-portfolio`**、**`jianwei-advise`**、**`jianwei-reflect`**、**`jianwei-explain`**、**`jianwei-report`**、**`jianwei-research-then-report`**、**`jianwei-research-then-explain`**、**`jianwei-advise-then-explain`**、**`jianwei-reflect-then-explain`**，可从技能入口选择或直接要求 agent 使用。包只注册技能，不更换模型、agent preset、多 agent 工具或权限。接口以 DSH **0.2.1-rc.3** 核查；其他 profile 需分别安装。
+技能名是 **`jianwei-setup`**、**`jianwei-tanyuan`**、**`jianwei-discover`**、**`jianwei-research`**、**`jianwei-portfolio`**、**`jianwei-advise`**、**`jianwei-reflect`**、**`jianwei-explain`**、**`jianwei-report`**、**`jianwei-research-then-report`**、**`jianwei-research-then-explain`**、**`jianwei-advise-then-explain`**、**`jianwei-reflect-then-explain`**，可从技能入口选择或直接要求 agent 使用。包只注册技能，不更换模型、agent preset、多 agent 工具或权限。接口以 DSH **0.2.1-rc.3** 核查；其他 profile 需分别安装。
 
 Git 包包含准备好的 ESM 注册文件，没有 prepare/postinstall 或 npm 构建步骤。Python 依赖在下面的显式初始化中准备。
 
@@ -112,6 +112,8 @@ python3 "/absolute/path/to/installed/jianwei/scripts/setup.py" \
 示例：
 
 > 使用 Jianwei 的 research，研究我指定公司的最近一期经营变化及其投资含义。核对披露时点，按问题安排独立调查，对关键数字和主要推断独立复核。用自然语言 Markdown 给出结论、证据、反证与缺口，保存在当前目录。
+
+尚未确定具体研究对象时，可以要求：“使用 discover，从当前市场信息中寻找值得关注的投资方向，说明候选的关注理由和下一步值得研究的问题。”已有明确问题时可直接使用 research；不要求先完成机会发现。
 
 research 可使用 tanyuan，也可自行 Web 搜索。如果宿主禁用了子 agent，应明确披露独立复核的缺口。
 

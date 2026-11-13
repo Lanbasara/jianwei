@@ -132,7 +132,9 @@ def _main(argv):
         return 0
     if ns.command == 'call':
         from . import registry
+        from .presentation import render_view, validate_view
         _tool(ns.tool)
+        validate_view(ns.tool, ns.view)
         args = _load_json(ns.json_args) if ns.json_args is not None else {}
         if not isinstance(args, dict):
             raise bad_arg('--json 必须是 JSON 对象。', '单个参数也要放在对象里；按 ty describe <tool> 的 args 构造。')
@@ -144,7 +146,7 @@ def _main(argv):
                 raise bad_arg('参数键重复，已拒绝覆盖。', '--json 和所有 --arg 之间，每个键只提供一次。')
             args[key] = _parse_value(value)
         envelope, status = registry.dispatch(ns.tool, args, use_cache=not ns.no_cache)
-        _print(envelope, pretty=ns.pretty or sys.stdout.isatty())
+        _print(render_view(envelope, ns.view), pretty=ns.pretty or sys.stdout.isatty())
         return status
     if ns.command == 'cache':
         return _cache_command(ns)

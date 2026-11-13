@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.6.0 - 2026-11-13
+
+- Add opt-in `ty call --view brief` for news feeds, flashes, and web search;
+  preserve provenance, dates, coverage and continuation while declaring display
+  omissions. The default full response and query semantics remain unchanged.
+- Clarify RSS time filters and unify incomplete-result recovery: configured
+  DeepSeek/Tavily search can supplement direct sources, with explicit provider
+  choice and proportionate stopping when reliable evidence remains unavailable.
+- Add independent `discover` for opportunity finding and candidate screening;
+  preserve research's focus on defined questions, with collaboration as needed.
+- Replace fixed tool sequences with optional examples, keeping interface
+  definitions in CLI help.
+- Bundle Tanyuan 0.7.0. Installation, shared runtime and workspace layout are
+  unchanged; no migration is required.
+
 ## 0.5.1 - 2026-11-12
 
 - Clarify that historical archives preserve context and evidence, not current user

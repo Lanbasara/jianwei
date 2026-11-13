@@ -11,6 +11,7 @@ plugin.apply({ skills: { register: definition => definitions.push(definition) } 
 assert.deepEqual(definitions.map(d => d.name), [
   'jianwei-setup',
   'jianwei-tanyuan',
+  'jianwei-discover',
   'jianwei-research',
   'jianwei-portfolio',
   'jianwei-advise',
