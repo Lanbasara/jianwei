@@ -52,7 +52,7 @@ class Distribution(unittest.TestCase):
             if relative == "skills/tanyuan/bin/ty":
                 path = path.with_name("ty-upstream")
             self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(), digest)
-        for name in ("setup", "research", "portfolio", "advise", "reflect", "explain", "report",
+        for name in ("setup", "discover", "research", "portfolio", "advise", "reflect", "explain", "report",
                      "research-then-report", "research-then-explain",
                      "advise-then-explain", "reflect-then-explain"):
             self.assertEqual((self.bundle / f"skills/{name}/SKILL.md").read_bytes(),
