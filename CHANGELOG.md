@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.6.1 - 2026-11-15
+
+- Clarify that the workspace is a historical archive: completed cases preserve
+  their contemporaneous research, discussion, and decisions, but do not become
+  immutable current facts, default strategy, or tasks that a later session must
+  continue.
+- Rebuild `plugin/`; installation, shared runtime, and bundled Tanyuan 0.7.0
+  are unchanged; no migration is required.
+
 ## 0.6.0 - 2026-11-13
 
 - Add opt-in `ty call --view brief` for news feeds, flashes, and web search;
